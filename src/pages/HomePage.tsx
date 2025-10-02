@@ -217,13 +217,14 @@ const HomePage: React.FC<HomePageProps> = ({
     });
   }, [searchQuery, filters, selectedCategory, personalizedMentors]);
 
+  const isMentee = user?.role === 'mentee';
+
   return (
     <Layout onShowAuth={onShowAuth} onShowAppointments={onShowAppointments} onShowMessages={onShowMessages}>
-      {/* START: HeroBanner */}
-      <HeroBanner />
-      {/* END: HeroBanner */}
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* HeroBanner: Hidden for mentees, shown for mentors and anonymous users */}
+      {!isMentee && <HeroBanner />}
+
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${isMentee ? 'py-8 md:py-12' : 'py-8'}`}>
         {/* Category Filter Bar */}
         <CategoryFilterBar
           selectedCategory={selectedCategory}
@@ -231,19 +232,18 @@ const HomePage: React.FC<HomePageProps> = ({
           mentorCounts={mentorCounts}
         />
 
-        {/* Personalized Recommendations */}
+        {/* Personalized Recommendations - Appears first for mentees */}
         {personalizedMentors.length > 0 && (
           <div className="mb-12">
-            <div className="flex items-center space-x-3 mb-6">
+            <div className="flex items-center space-x-3 mb-4">
               <div className="flex items-center space-x-2">
-                <Heart className="w-6 h-6 text-pink-500" />
-                <h2 className="text-2xl font-bold text-gray-900">Sana Özel Eşleşmeler</h2>
+                <Sparkles className="w-6 h-6 text-amber-400" />
+                <h2 className="text-3xl font-bold text-gray-900">Sana Özel Eşleşmeler</h2>
               </div>
-              <Sparkles className="w-5 h-5 text-amber-400" />
             </div>
-            
-            <p className="text-gray-600 mb-6">
-              Hedeflerinle eşleşen mentörler özel olarak seçildi
+
+            <p className="text-gray-600 text-lg mb-6">
+              Hedeflerinle eşleşen mentörler senin için özel olarak seçildi ✨
             </p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
@@ -262,10 +262,38 @@ const HomePage: React.FC<HomePageProps> = ({
               ))}
             </div>
             
-            <div className="border-t border-gray-200 pt-8">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                Tüm Mentörleri Keşfet
-              </h3>
+            {isMentee && (
+              <div className="border-t border-gray-200 pt-8 mt-8">
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  Tüm Mentörleri Keşfet
+                </h3>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Empty state for mentees with no recommendations */}
+        {isMentee && personalizedMentors.length === 0 && (
+          <div className="mb-12 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-8 border border-amber-200">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <Sparkles className="w-10 h-10 text-amber-500" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Kişiselleştirilmiş Öneriler Hazırlanıyor
+                </h2>
+                <p className="text-gray-700 mb-4">
+                  Sana en uygun mentörleri gösterebilmemiz için hedeflerini ve ilgi alanlarını paylaş.
+                </p>
+                <button
+                  onClick={onShowOnboarding}
+                  className="inline-flex items-center space-x-2 px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-semibold"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  <span>Tercihleri Doldur</span>
+                </button>
+              </div>
             </div>
           </div>
         )}
