@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, Heart, Sparkles } from 'lucide-react';
 import Layout from '../components/Layout/Layout';
+import HeroBanner from '../components/HeroBanner';
 import MentorCard from '../components/MentorCard/MentorCard';
 import FilterPanel from '../components/FilterPanel/FilterPanel';
 import CategoryFilterBar from '../components/CategoryFilterBar/CategoryFilterBar';
@@ -198,29 +199,11 @@ const HomePage: React.FC<HomePageProps> = ({
 
   return (
     <Layout onShowAuth={onShowAuth} onShowAppointments={onShowAppointments} onShowMessages={onShowMessages}>
+      {/* START: HeroBanner */}
+      <HeroBanner />
+      {/* END: HeroBanner */}
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Mükemmel Mentörünü Bul
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Kariyer gelişiminizi yönlendirebilecek ve hedeflerinize ulaşmanızda size yardımcı olabilecek deneyimli profesyonellerle bağlantı kurun.
-          </p>
-          
-          {/* Call to Action for Non-Authenticated Users */}
-          {!user && (
-            <div className="mt-8">
-              <button
-                onClick={() => onShowAuth?.()}
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
-              >
-                Hemen Başla
-              </button>
-            </div>
-          )}
-        </div>
-
         {/* Category Filter Bar */}
         <CategoryFilterBar
           selectedCategory={selectedCategory}
