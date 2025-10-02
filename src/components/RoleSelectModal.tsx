@@ -16,7 +16,6 @@ interface RoleSelectModalProps {
  */
 const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) => {
   const { setRole } = useRole();
-  const { setRole } = useRole();
   const modalRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
