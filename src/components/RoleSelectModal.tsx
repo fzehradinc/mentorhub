@@ -68,25 +68,6 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
     window.location.href = '/mentorler';
   };
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  const handleRoleSelect = (role: 'mentor' | 'mentee', href: string) => {
-    // Save role to localStorage
-    setRole(role);
-    
-    // Navigate to onboarding
-    window.location.href = href;
-  };
-
-  const handleExploreClick = () => {
-    onClose();
-    window.location.href = '/mentorler';
-  };
-
   if (!isOpen) return null;
 
   return (
