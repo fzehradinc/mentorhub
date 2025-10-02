@@ -12,7 +12,6 @@ interface PricingPackage {
 interface MentorPricing {
   price_per_session: number;
   first_session_discount: boolean;
-  first_session_discount_type: 'percentage' | 'fixed';
   first_session_discount_value: number;
   discount_note: string;
   packages: PricingPackage[];
@@ -37,20 +36,15 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
     { min: 1000, max: 5000, label: 'Premium', desc: '1000₺+' }
   ];
 
-  const discountOptions = {
-    percentage: [
-      { value: 10, label: '%10' },
-      { value: 20, label: '%20' },
-      { value: 30, label: '%30' },
-      { value: 50, label: '%50' }
-    ],
-    fixed: [
-      { value: 99, label: '99₺' },
-      { value: 149, label: '149₺' },
-      { value: 199, label: '199₺' },
-      { value: 249, label: '249₺' }
-    ]
-  };
+  const discountOptions = [
+    { value: 10, label: '%10', impact: 35 },
+    { value: 20, label: '%20', impact: 42 },
+    { value: 25, label: '%25', impact: 48 },
+    { value: 30, label: '%30', impact: 55 },
+    { value: 35, label: '%35', impact: 60 },
+    { value: 40, label: '%40', impact: 65 },
+    { value: 50, label: '%50', impact: 75 }
+  ];
 
   const packageTemplates = [
     {
@@ -81,12 +75,8 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
       return data.price_per_session;
     }
 
-    if (data.first_session_discount_type === 'fixed') {
-      return data.first_session_discount_value;
-    } else {
-      const discount = (data.price_per_session * data.first_session_discount_value) / 100;
-      return Math.round(data.price_per_session - discount);
-    }
+    const discount = (data.price_per_session * data.first_session_discount_value) / 100;
+    return Math.round(data.price_per_session - discount);
   };
 
   const calculatePackagePrice = (pkg: PricingPackage) => {
@@ -128,9 +118,13 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
   const handleDiscountToggle = (checked: boolean) => {
     onChange('first_session_discount', checked);
     if (checked && !data.first_session_discount_value) {
-      onChange('first_session_discount_type', 'percentage');
       onChange('first_session_discount_value', 20);
     }
+  };
+
+  const getDiscountImpact = () => {
+    const option = discountOptions.find(opt => opt.value === data.first_session_discount_value);
+    return option ? option.impact : 35;
   };
 
   return (
@@ -203,7 +197,7 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
         label="İlk Seans İndirimi"
         helper={
           <div className="flex items-center space-x-1">
-            <span>Yeni mentee kazanımını %35 artırır</span>
+            <span>Yeni mentee'ler için özel fiyat</span>
             <Info className="w-3 h-3 text-gray-500" />
           </div>
         }
@@ -231,81 +225,62 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
           </label>
 
           {data.first_session_discount && (
-            <div className="bg-gradient-to-br from-blue-50 to-green-50 border-2 border-blue-200 rounded-xl p-6 space-y-4 animate-fadeIn">
-              {/* Discount Type Selection */}
-              <div className="flex items-center space-x-2 text-sm">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChange('first_session_discount_type', 'percentage');
-                    onChange('first_session_discount_value', 20);
-                  }}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    data.first_session_discount_type === 'percentage'
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  Yüzde İndirim
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChange('first_session_discount_type', 'fixed');
-                    onChange('first_session_discount_value', 149);
-                  }}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    data.first_session_discount_type === 'fixed'
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-white text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  Sabit Fiyat
-                </button>
-              </div>
-
-              {/* Discount Options */}
-              <div className="grid grid-cols-4 gap-3">
-                {(data.first_session_discount_type === 'percentage'
-                  ? discountOptions.percentage
-                  : discountOptions.fixed
-                ).map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => onChange('first_session_discount_value', option.value)}
-                    className={`p-3 border-2 rounded-lg font-semibold transition-all hover:scale-105 ${
-                      data.first_session_discount_value === option.value
-                        ? 'border-green-500 bg-green-50 text-green-700 shadow-md'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-green-300'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+            <div className="bg-gradient-to-br from-blue-50 to-green-50 border-2 border-blue-200 rounded-xl p-6 space-y-5 animate-fadeIn">
+              {/* Discount Percentage Selection */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">İndirim yüzdesini seçin:</h4>
+                <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
+                  {discountOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => onChange('first_session_discount_value', option.value)}
+                      className={`relative p-3 border-2 rounded-lg font-bold transition-all hover:scale-105 ${
+                        data.first_session_discount_value === option.value
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-lg'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-blue-300'
+                      }`}
+                    >
+                      {data.first_session_discount_value === option.value && (
+                        <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Visual Price Display */}
               {data.price_per_session > 0 && (
-                <div className="bg-white rounded-lg p-4 border-2 border-green-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">İlk seans fiyatı:</span>
-                    <div className="flex items-center space-x-3">
-                      <span className="text-lg text-gray-400 line-through">
-                        {data.price_per_session}₺
-                      </span>
-                      <span className="text-2xl font-bold text-green-600 animate-slideIn">
-                        {calculateFirstSessionPrice()}₺
-                      </span>
-                    </div>
+                <div className="bg-white rounded-xl p-5 border-2 border-green-200 shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">İlk Seans Fiyatı</span>
+                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
+                      %{data.first_session_discount_value} indirim
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-end space-x-3">
+                    <span className="text-xl text-gray-400 line-through">
+                      {data.price_per_session}₺
+                    </span>
+                    <span className="text-3xl font-bold text-green-600 animate-slideIn">
+                      {calculateFirstSessionPrice()}₺
+                    </span>
                   </div>
                 </div>
               )}
 
-              {/* Motivational Message */}
-              <div className="flex items-start space-x-2 text-sm text-blue-800">
+              {/* Dynamic Motivational Message */}
+              <div className="flex items-start space-x-2 text-sm text-blue-800 bg-blue-100 rounded-lg p-3">
                 <Sparkles className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>İlk seans indirimi ekleyerek yeni mentee kazanımını kolaylaştırdın!</span>
+                <div>
+                  <p className="font-medium">İlk seans indirimi ekleyerek yeni mentee kazanımını kolaylaştırdın!</p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    Seçtiğin %{data.first_session_discount_value} indirim yeni mentee kazanımını ~%{getDiscountImpact()} artırır.
+                  </p>
+                </div>
               </div>
             </div>
           )}
@@ -429,9 +404,7 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
                     <div>
                       <span className="text-sm font-medium text-green-900">İlk Seans</span>
                       <span className="ml-2 text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded-full">
-                        {data.first_session_discount_type === 'percentage'
-                          ? `%${data.first_session_discount_value}`
-                          : `${data.first_session_discount_value}₺`}
+                        %{data.first_session_discount_value} indirim
                       </span>
                     </div>
                     <div className="text-right">
