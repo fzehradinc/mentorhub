@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Settings, User, LogOut, Star, MapPin, Clock, Calendar, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Filter, Settings, User, LogOut, Star, MapPin, Clock, Calendar, X, ChevronDown, ChevronUp, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import DataPrivacyManager from '../components/DataPrivacy/DataPrivacyManager';
 import { mockMentors } from '../data/mockData';
 import { Mentor, FilterOptions } from '../types';
 
@@ -19,6 +20,7 @@ const MenteePage: React.FC<MenteePageProps> = ({ onBack }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showMoreMentors, setShowMoreMentors] = useState(false);
+  const [showDataPrivacy, setShowDataPrivacy] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     expertiseAreas: [],
     languages: [],
@@ -157,6 +159,13 @@ const MenteePage: React.FC<MenteePageProps> = ({ onBack }) => {
                   <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
                     <Settings className="w-4 h-4" />
                     <span>Ayarlar</span>
+                  </button>
+                  <button 
+                    onClick={() => setShowDataPrivacy(true)}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                  >
+                    <Shield className="w-4 h-4" />
+                    <span>Veri Gizliliği</span>
                   </button>
                   <hr className="my-2" />
                   <button
@@ -541,6 +550,12 @@ const MenteePage: React.FC<MenteePageProps> = ({ onBack }) => {
           </div>
         </div>
       )}
+
+      {/* Data Privacy Manager Modal */}
+      <DataPrivacyManager
+        isOpen={showDataPrivacy}
+        onClose={() => setShowDataPrivacy(false)}
+      />
     </div>
   );
 };

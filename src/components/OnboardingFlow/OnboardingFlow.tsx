@@ -8,6 +8,8 @@ interface OnboardingData {
   timeAvailability: string;
   mentorType: string;
   goalDescription: string;
+  consent: boolean;
+  marketingConsent: boolean;
 }
 
 interface OnboardingFlowProps {
@@ -23,20 +25,28 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
     budget: '',
     timeAvailability: '',
     mentorType: '',
-    goalDescription: ''
+    goalDescription: '',
+    consent: false,
+    marketingConsent: false
   });
 
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   const motivationalQuotes = [
     "Her yolculuk küçük bir adımla başlar.",
     "Hedeflerini bilen, yolunu kısaltır.",
     "Doğru iletişim, en hızlı ilerlemenin anahtarıdır.",
     "Bugünkü seviyen, yarının potansiyeline engel değil.",
+    "Güvenli bir yolculuk için doğru adımları atıyoruz.",
     "Başarı, doğru rehberle çok daha hızlı gelir."
   ];
 
   const handleNext = () => {
+    if (currentStep === 5 && !data.consent) {
+      alert('Veri işleme rızası vermeden devam edemezsiniz.');
+      return;
+    }
+    
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -72,6 +82,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
       case 2: return data.goalLevel !== '';
       case 3: return data.budget !== '' && data.timeAvailability !== '';
       case 4: return true; // Optional step
+      case 5: return data.consent; // KVKK consent required
       default: return false;
     }
   };
@@ -376,6 +387,114 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
     </div>
   );
 
+  const renderStep5 = () => (
+    <div className="animate-fade-in">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          Veri Güvenliği ve İzinler
+        </h2>
+        <p className="text-lg text-gray-600">
+          Verilerinizin güvenliği bizim için çok önemli. Lütfen aşağıdaki izinleri gözden geçirin.
+        </p>
+      </div>
+
+      <div className="space-y-8 max-w-4xl mx-auto">
+        {/* KVKK Consent - Required */}
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-8">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0 mt-1">
+              <input
+                type="checkbox"
+                id="kvkk-consent"
+                checked={data.consent}
+                onChange={(e) => updateData('consent', e.target.checked.toString())}
+                className="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded focus:ring-blue-500"
+                required
+              />
+            </div>
+            <div className="flex-1">
+              <label htmlFor="kvkk-consent" className="block text-lg font-semibold text-blue-900 mb-3 cursor-pointer">
+                🔒 Veri İşleme Rızası (Zorunlu)
+              </label>
+              <div className="text-blue-800 space-y-2">
+                <p className="text-sm leading-relaxed">
+                  Kişisel verilerimin KVKK (Kişisel Verilerin Korunması Kanunu) kapsamında işlenmesini, 
+                  mentor eşleştirme algoritmasında kullanılmasını ve platform hizmetlerinin sunulması 
+                  amacıyla saklanmasını kabul ediyorum.
+                </p>
+                <div className="bg-blue-100 rounded-lg p-3 text-xs">
+                  <p><strong>Saklama Süresi:</strong> Verileriniz en fazla 12 ay saklanacaktır.</p>
+                  <p><strong>Silme Hakkı:</strong> İstediğiniz zaman verilerinizi silebilirsiniz.</p>
+                  <p><strong>Güvenlik:</strong> Tüm veriler şifrelenmiş olarak saklanır.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Marketing Consent - Optional */}
+        <div className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-8">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0 mt-1">
+              <input
+                type="checkbox"
+                id="marketing-consent"
+                checked={data.marketingConsent}
+                onChange={(e) => updateData('marketingConsent', e.target.checked.toString())}
+                className="w-5 h-5 text-gray-600 border-2 border-gray-300 rounded focus:ring-gray-500"
+              />
+            </div>
+            <div className="flex-1">
+              <label htmlFor="marketing-consent" className="block text-lg font-semibold text-gray-900 mb-3 cursor-pointer">
+                📧 Pazarlama İletişimi (İsteğe Bağlı)
+              </label>
+              <p className="text-gray-700 text-sm leading-relaxed">
+                Kampanyalar, özel teklifler ve platform güncellemeleri hakkında e-posta ile 
+                bilgilendirilmek istiyorum. Bu izni istediğiniz zaman geri çekebilirsiniz.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Data Rights Information */}
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
+          <h3 className="text-lg font-semibold text-green-900 mb-4 flex items-center">
+            <span className="mr-2">⚖️</span>
+            Veri Haklarınız
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-green-800">
+            <div className="flex items-start space-x-2">
+              <span className="text-green-600">•</span>
+              <span>Verilerinizi indirme hakkı</span>
+            </div>
+            <div className="flex items-start space-x-2">
+              <span className="text-green-600">•</span>
+              <span>Unutulma hakkı (veri silme)</span>
+            </div>
+            <div className="flex items-start space-x-2">
+              <span className="text-green-600">•</span>
+              <span>Veri düzeltme hakkı</span>
+            </div>
+            <div className="flex items-start space-x-2">
+              <span className="text-green-600">•</span>
+              <span>İşlemeye itiraz hakkı</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Information */}
+        <div className="text-center text-sm text-gray-600">
+          <p>
+            Veri güvenliği ile ilgili sorularınız için: 
+            <a href="mailto:privacy@mentorhub.com" className="text-blue-600 hover:text-blue-700 ml-1">
+              privacy@mentorhub.com
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderFinalStep = () => (
     <div className="text-center animate-fade-in">
       <div className="mb-12">
@@ -435,7 +554,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
   );
 
   const renderCurrentStep = () => {
-    if (currentStep === 5) {
+    if (currentStep === 6) {
       return renderFinalStep();
     }
     
@@ -444,6 +563,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
       case 2: return renderStep2();
       case 3: return renderStep3();
       case 4: return renderStep4();
+      case 5: return renderStep5();
       default: return null;
     }
   };
@@ -464,7 +584,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
         </div>
 
         {/* Progress Bar */}
-        {currentStep <= totalSteps && renderProgressBar()}
+        {currentStep <= totalSteps + 1 && renderProgressBar()}
 
         {/* Main Content */}
         <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-8 min-h-[600px] flex flex-col justify-center">
@@ -497,7 +617,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
               className="flex items-center space-x-2 px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
             >
               <span>
-                {currentStep === 5 ? 'Mentor Önerilerini Gör' : 'Devam Et'}
+                {currentStep === 6 ? 'Mentor Önerilerini Gör' : 'Devam Et'}
               </span>
               <ArrowRight className="w-5 h-5" />
             </button>
