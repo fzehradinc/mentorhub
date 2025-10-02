@@ -93,6 +93,7 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
     <div
       aria-labelledby="role-select-title"
       onClick={handleOverlayClick}
+    >
       <div
         ref={modalRef}
         className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in"
