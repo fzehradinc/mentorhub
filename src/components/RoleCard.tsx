@@ -9,6 +9,7 @@ interface RoleCardProps {
   href: string;
   roleValue: 'mentor' | 'mentee';
   onClick: (role: 'mentor' | 'mentee', href: string) => void;
+  onShowOnboarding?: () => void;
 }
 
 /**
@@ -21,6 +22,7 @@ interface RoleCardProps {
  * - href: URL to navigate to when selected
  * - roleValue: Role identifier for tracking
  * - onClick: Function called when card is selected
+ * - onShowOnboarding: Function to show onboarding flow
  */
 const RoleCard: React.FC<RoleCardProps> = ({
   icon,
@@ -29,10 +31,15 @@ const RoleCard: React.FC<RoleCardProps> = ({
   ctaLabel,
   href,
   roleValue,
-  onClick
+  onClick,
+  onShowOnboarding
 }) => {
   const handleClick = () => {
-    onClick(roleValue, href);
+    if (roleValue === 'mentee' && onShowOnboarding) {
+      onShowOnboarding();
+    } else {
+      onClick(roleValue, href);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

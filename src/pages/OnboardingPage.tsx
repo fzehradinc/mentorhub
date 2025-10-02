@@ -4,14 +4,12 @@ import Layout from '../components/Layout/Layout';
 import OnboardingFlow from '../components/OnboardingFlow/OnboardingFlow';
 
 interface OnboardingData {
-  name: string;
-  location: string;
-  currentRole: string;
-  goals: string[];
-  interests: string[];
-  experienceLevel: string;
-  expectations: string[];
-  communicationPreference: string;
+  category: string;
+  goalLevel: string;
+  budget: string;
+  timeAvailability: string;
+  mentorType: string;
+  goalDescription: string;
 }
 
 interface OnboardingPageProps {
@@ -20,7 +18,7 @@ interface OnboardingPageProps {
 
 /**
  * Onboarding page for new mentees
- * Handles the complete 5-step onboarding flow
+ * Handles the complete progressive onboarding flow
  */
 const OnboardingPage: React.FC<OnboardingPageProps> = ({ onBack }) => {
   const [showFlow, setShowFlow] = useState(true);
@@ -31,7 +29,7 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ onBack }) => {
     // Save onboarding data to localStorage or send to API
     localStorage.setItem('mentee_onboarding_data', JSON.stringify(data));
     
-    // Redirect to mentor suggestions or home page
+    // Show success message and redirect
     alert('Onboarding tamamlandı! Mentor önerilerine yönlendiriliyorsunuz...');
     onBack(); // This would typically navigate to mentor suggestions
   };

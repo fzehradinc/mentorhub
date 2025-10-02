@@ -15,6 +15,7 @@ interface HeroBannerProps {
   kpis?: Array<{ label: string; value: string }>;
   badges?: string[];
   language?: 'tr' | 'en';
+  onShowOnboarding?: () => void;
 }
 
 const HeroBanner: React.FC<HeroBannerProps> = ({
@@ -27,7 +28,8 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
   showSearch = true,
   kpis: propKpis,
   badges = trustBadges,
-  language = 'tr'
+  language = 'tr',
+  onShowOnboarding
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
