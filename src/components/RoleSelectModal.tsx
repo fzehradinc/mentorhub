@@ -104,7 +104,6 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
         <div className="p-6">
           {/* Role Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <RoleCard
               icon={<User className="w-8 h-8" />}
               title="Hayallerine doğru ilk adımı at"
@@ -112,7 +111,6 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
               ctaLabel="Mentee olarak devam et"
               href="/onboarding?role=mentee"
               roleValue="mentee"
-              onClick={handleRoleSelect}
               onClick={handleRoleSelect}
             />
             
@@ -124,7 +122,6 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
               href="/onboarding?role=mentor"
               roleValue="mentor"
               onClick={handleRoleSelect}
-              onClick={handleRoleSelect}
             />
           </div>
 
@@ -132,20 +129,6 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
           <div className="text-center pt-6 border-t border-gray-100">
             <p className="text-gray-600 mb-4">
               Henüz emin değil misin? İlham almak için önce mentörleri keşfet.
-            </p>
-            <button
-              onClick={handleExploreClick}
-              className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium transition-colors group"
-            >
-              <span>Önce mentörleri keşfet</span>
-              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-
-          {/* Alternative Action */}
-          <div className="text-center pt-6 border-t border-gray-100">
-            <p className="text-gray-600 mb-4">
-              Henüz karar veremedin mi?
             </p>
             <button
               onClick={handleExploreClick}
@@ -187,41 +170,3 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
           }
         }
       `}</style>
-
-      <style jsx>{`
-        .animate-fade-in {
-          animation: fadeIn 150ms ease-out forwards;
-        }
-        
-        .animate-scale-in {
-          animation: scaleIn 150ms ease-out forwards;
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-      `}</style>
-  )
-}
-  )
-}
-  )
-}
-  )
-}
