@@ -9,6 +9,7 @@ interface RoleCardProps {
   href: string;
   roleValue: 'mentor' | 'mentee';
   onClick: (role: 'mentor' | 'mentee', href: string) => void;
+  onClick: (role: 'mentor' | 'mentee', href: string) => void;
 }
 
 /**
@@ -30,7 +31,19 @@ const RoleCard: React.FC<RoleCardProps> = ({
   href,
   roleValue,
   onClick
+  onClick
 }) => {
+  const handleClick = () => {
+    onClick(roleValue, href);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
   const handleClick = () => {
     onClick(roleValue, href);
   };
@@ -67,6 +80,43 @@ const RoleCard: React.FC<RoleCardProps> = ({
       <p className="text-gray-600 text-center mb-6 leading-relaxed">
         {description}
       </p>
+
+      {/* Example Steps */}
+      <div className="mb-6">
+        <div className="space-y-2">
+          {roleValue === 'mentee' ? (
+            <>
+              <div className="flex items-center text-sm text-gray-500">
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
+                <span>Alanını seç</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-500">
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
+                <span>Mentörü bul</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-500">
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
+                <span>Randevu al</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center text-sm text-gray-500">
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
+                <span>Profilini tamamla</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-500">
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
+                <span>Uzmanlık ekle</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-500">
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
+                <span>İlk randevunu al</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Example Steps */}
       <div className="mb-6">
