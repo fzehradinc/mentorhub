@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, UserCheck } from 'lucide-react';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../contexts/AuthContext';
+import MenteeRegistrationSuccess from '../components/MenteeRegistrationSuccess';
+import Toast from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 
 interface AuthPageProps {
   onSuccess: () => void;
@@ -14,15 +17,21 @@ interface AuthPageProps {
  */
 const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
   const { login, register, isLoading, error } = useAuth();
+  const { toasts, hideToast, success: showSuccess } = useToast();
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'mentee' as 'mentor' | 'mentee'
+    role: 'mentee' as 'mentor' | 'mentee',
+    preferredArea: '',
+    goal: '',
+    budgetRange: '',
+    availableTime: ''
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -81,7 +90,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
 
     try {
       let success = false;
-      
+
       if (isSignUp) {
         success = await register({
           name: formData.name,
@@ -89,6 +98,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
           password: formData.password,
           role: formData.role
         });
+
+        if (success && formData.role === 'mentee') {
+          // Show success modal for mentee registration
+          setShowSuccessModal(true);
+          showSuccess('Kayıt tamamlandı. Tercihlerin kaydedildi ✅');
+          return;
+        }
       } else {
         success = await login(formData.email, formData.password);
       }
@@ -381,6 +397,41 @@ const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Registration Success Modal */}
+      <MenteeRegistrationSuccess
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        menteeData={{
+          fullName: formData.name,
+          email: formData.email,
+          preferredArea: formData.preferredArea || 'Henüz belirtilmedi',
+          goal: formData.goal || 'Kişisel gelişim',
+          budgetRange: formData.budgetRange || 'Esnek',
+          availableTime: formData.availableTime || 'Esnek'
+        }}
+        onViewMatches={() => {
+          setShowSuccessModal(false);
+          onSuccess();
+        }}
+        onCompleteProfile={() => {
+          setShowSuccessModal(false);
+          onSuccess();
+        }}
+      />
+
+      {/* Toast Notifications */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {toasts.map(toast => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => hideToast(toast.id)}
+            duration={toast.duration}
+          />
+        ))}
       </div>
     </Layout>
   );
