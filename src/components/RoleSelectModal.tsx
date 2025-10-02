@@ -140,8 +140,9 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
           </div>
         </div>
       </div>
+    </div>
 
-      <style jsx>{`
+      <style>{`
         .animate-fade-in {
           animation: fadeIn 150ms ease-out forwards;
         }
@@ -170,5 +171,6 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
           }
         }
       `}</style>
-  )
+    </div>
+  );
 }
