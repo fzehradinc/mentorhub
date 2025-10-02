@@ -120,7 +120,6 @@ const StepExpertise: React.FC<StepExpertiseProps> = ({ data, onChange, errors })
       {/* Skills */}
       <FormField
         label="Beceriler & Uzmanlık Alanları"
-        required
         error={errors.skills}
         helper="Uzmanlığı netleştirmek, eşleşme kalitesini artırır. En az 3 beceri önerilir."
       >
@@ -195,10 +194,10 @@ const StepExpertise: React.FC<StepExpertiseProps> = ({ data, onChange, errors })
             </div>
           )}
 
-          {data.skills.length < 3 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-sm text-amber-800">
-                ⚠️ En az 3 beceri seçmeniz önerilir. Bu, daha iyi eşleşmeler sağlar.
+          {data.skills.length > 0 && data.skills.length < 3 && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <p className="text-sm text-gray-600">
+                💡 Daha fazla beceri seçersen görünürlüğün artar.
               </p>
             </div>
           )}
@@ -208,7 +207,6 @@ const StepExpertise: React.FC<StepExpertiseProps> = ({ data, onChange, errors })
       {/* Experience Years */}
       <FormField
         label="Deneyim Yılı"
-        required
         error={errors.experience_years}
         helper="Bu alandaki toplam deneyiminiz"
       >
@@ -233,6 +231,13 @@ const StepExpertise: React.FC<StepExpertiseProps> = ({ data, onChange, errors })
             </button>
           ))}
         </div>
+        {data.experience_years === 0 && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-2">
+            <p className="text-sm text-gray-600">
+              💡 Bu alanı doldurursanız eşleşme kalitesi artar.
+            </p>
+          </div>
+        )}
       </FormField>
 
       {/* Highlight Offers */}
@@ -262,17 +267,30 @@ const StepExpertise: React.FC<StepExpertiseProps> = ({ data, onChange, errors })
         </div>
       </FormField>
 
-      {/* Expertise Summary */}
-      {data.primary_category && data.skills.length > 0 && (
-        <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6">
+      {/* Dynamic Expertise Summary */}
+      {data.primary_category && (
+        <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-6">
           <div className="flex items-start space-x-3">
-            <Lightbulb className="w-6 h-6 text-purple-600 mt-1" />
+            <Lightbulb className="w-6 h-6 text-blue-600 mt-1" />
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">Uzmanlık Özeti</h3>
               <p className="text-sm text-gray-700">
-                <strong>{categories.find(c => c.key === data.primary_category)?.label}</strong> alanında{' '}
-                <strong>{data.experience_years}+ yıl</strong> deneyimli mentor olarak{' '}
-                <strong>{data.skills.length} beceri</strong> alanında mentörlük verebilirsiniz.
+                {data.primary_category && !data.skills.length && !data.experience_years && (
+                  <span><strong>{categories.find(c => c.key === data.primary_category)?.label}</strong> alanında mentörlük vermeye hazırsın 🚀</span>
+                )}
+                {data.primary_category && data.skills.length > 0 && !data.experience_years && (
+                  <span>Seçtiğin <strong>{data.skills.length} beceri</strong> ile birçok mentee'ye destek olabilirsin ✨</span>
+                )}
+                {data.primary_category && data.experience_years > 0 && data.skills.length === 0 && (
+                  <span><strong>{categories.find(c => c.key === data.primary_category)?.label}</strong> alanında <strong>{data.experience_years}+ yıl</strong> deneyimini paylaşmaya hazırsın 🎯</span>
+                )}
+                {data.primary_category && data.experience_years > 0 && data.skills.length > 0 && (
+                  <span>
+                    <strong>{categories.find(c => c.key === data.primary_category)?.label}</strong> alanında{' '}
+                    {data.experience_years > 0 && <><strong>{data.experience_years}+ yıl</strong> deneyimli mentor olarak{' '}</>}
+                    <strong>{data.skills.length} beceri</strong> alanında mentörlük verebilirsiniz 🌟
+                  </span>
+                )}
               </p>
             </div>
           </div>

@@ -167,11 +167,52 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
     }
   };
 
+  const calculateProfileCompletion = (): number => {
+    let completed = 0;
+    let total = 0;
+
+    // Step 1: Basics (6 fields)
+    total += 6;
+    if (profileData.display_name?.length >= 2) completed++;
+    if (profileData.title?.length >= 2) completed++;
+    if (profileData.short_bio?.length >= 80) completed++;
+    if (profileData.languages?.length > 0) completed++;
+    if (profileData.location) completed++;
+    if (profileData.company_name) completed++;
+
+    // Step 2: Expertise (4 fields)
+    total += 4;
+    if (profileData.primary_category) completed++;
+    if (profileData.skills?.length >= 3) completed++;
+    if (profileData.experience_years > 0) completed++;
+    if (profileData.highlight_offers?.length > 0) completed++;
+
+    // Step 3: Availability (4 fields)
+    total += 4;
+    if (profileData.availability_pattern) completed++;
+    if (profileData.time_slots?.length > 0) completed++;
+    if (profileData.session_duration > 0) completed++;
+    if (profileData.meeting_pref) completed++;
+
+    // Step 4: Pricing (2 fields)
+    total += 2;
+    if (profileData.price_per_session >= 100) completed++;
+    if (profileData.packages?.length > 0) completed++;
+
+    // Step 5: Media/Bio (3 fields)
+    total += 3;
+    if (profileData.avatar_upload) completed++;
+    if (profileData.long_bio?.length >= 400) completed++;
+    if (profileData.video_intro_url) completed++;
+
+    return Math.round((completed / total) * 100);
+  };
+
   const validateCurrentStep = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     switch (currentStep) {
-      case 0: // Basics
+      case 0: // Basics - Only truly required fields block
         if (!profileData.display_name || profileData.display_name.length < 2) {
           newErrors.display_name = 'Görünecek isim en az 2 karakter olmalıdır';
         }
@@ -189,47 +230,34 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
         }
         break;
 
-      case 1: // Expertise
+      case 1: // Expertise - Only category is blocking
         if (!profileData.primary_category) {
           newErrors.primary_category = 'Ana kategori seçmelisiniz';
         }
-        if (profileData.skills.length < 3) {
-          newErrors.skills = 'En az 3 beceri seçmeniz önerilir';
-        }
-        if (profileData.experience_years === 0) {
-          newErrors.experience_years = 'Deneyim yılı belirtmelisiniz';
-        }
         break;
 
-      case 2: // Availability
+      case 2: // Availability - Only pattern is blocking
         if (!profileData.availability_pattern) {
           newErrors.availability_pattern = 'Müsaitlik durumu seçmelisiniz';
         }
-        if (!profileData.meeting_pref) {
-          newErrors.meeting_pref = 'Görüşme tercihi seçmelisiniz';
-        }
         break;
 
-      case 3: // Pricing
+      case 3: // Pricing - Only minimum price is blocking
         if (profileData.price_per_session < 100) {
           newErrors.price_per_session = 'Minimum ücret 100₺ olmalıdır';
         }
         break;
 
-      case 4: // Media/Bio
+      case 4: // Media/Bio - Only avatar is blocking
         if (!profileData.avatar_upload) {
           newErrors.avatar_upload = 'Profil fotoğrafı zorunludur';
-        }
-        if (profileData.long_bio.length < 400) {
-          newErrors.long_bio = 'Detaylı tanıtım en az 400 karakter olmalıdır';
         }
         if (profileData.video_intro_url && !validateVideoUrl(profileData.video_intro_url)) {
           newErrors.video_intro_url = 'Geçerli bir YouTube veya Vimeo linki giriniz';
         }
         break;
 
-      case 5: // Review/Publish
-        // All validations from previous steps
+      case 5: // Review/Publish - No blocking validations
         break;
     }
 
@@ -244,9 +272,8 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
   };
 
   const handleNext = () => {
-    if (validateCurrentStep()) {
-      setCurrentStep(prev => Math.min(prev + 1, totalSteps - 1));
-    }
+    validateCurrentStep();
+    setCurrentStep(prev => Math.min(prev + 1, totalSteps - 1));
   };
 
   const handlePrevious = () => {
@@ -351,19 +378,7 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
             errors={errors}
           />
         );
-      case 6:
-        return (
-          <StepVerification
-            data={{
-              badges: profileData.badges,
-              company_verification: profileData.company_verification,
-              kyc_upload: profileData.kyc_upload
-            }}
-            onChange={updateProfileData}
-            errors={errors}
-          />
-        );
-      case 5:
+      case 4:
         return (
           <StepMediaBio
             data={{
@@ -417,6 +432,7 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
       isPublishing={isPublishing}
       autosaveStatus={autosaveStatus}
       onClose={onBack}
+      profileCompletion={calculateProfileCompletion()}
     >
       {renderCurrentStep()}
     </WizardLayout>

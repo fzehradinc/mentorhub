@@ -16,6 +16,7 @@ interface WizardLayoutProps {
   isPublishing: boolean;
   autosaveStatus: 'idle' | 'saving' | 'saved' | 'error';
   onClose: () => void;
+  profileCompletion?: number;
 }
 
 const motivationalQuotes = [
@@ -52,7 +53,8 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
   onPublish,
   isPublishing,
   autosaveStatus,
-  onClose
+  onClose,
+  profileCompletion = 0
 }) => {
   const [showStepMenu, setShowStepMenu] = useState(false);
 
@@ -170,11 +172,19 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
             percentage={getProgressPercentage()} 
           />
           
-          {/* Motivational Quote */}
-          <div className="text-center mt-6">
+          {/* Motivational Quote & Completion */}
+          <div className="text-center mt-6 space-y-3">
             <p className="text-lg text-blue-700 font-medium italic">
               "{motivationalQuotes[currentStep]}"
             </p>
+            {profileCompletion > 0 && profileCompletion < 100 && (
+              <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-50 rounded-full">
+                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                <span className="text-sm text-blue-800">
+                  Profilin <strong>%{profileCompletion}</strong> tamamlandı. Daha sonra doldurabilirsin.
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -194,7 +204,7 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
           </button>
 
           <div className="flex items-center space-x-4">
-            {/* Save Draft Button */}
+            {/* Save Draft Button - Always available */}
             <button
               onClick={onSave}
               className="flex items-center space-x-2 px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors min-h-[44px]"
@@ -214,10 +224,10 @@ const WizardLayout: React.FC<WizardLayoutProps> = ({
               </button>
             )}
 
-            {/* Next/Publish Button */}
+            {/* Next/Continue Button - Always enabled */}
             <button
               onClick={currentStep === totalSteps - 1 ? onPublish : onNext}
-              disabled={!isStepValid || isPublishing}
+              disabled={isPublishing}
               className="flex items-center space-x-2 px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px]"
             >
               {isPublishing ? (
