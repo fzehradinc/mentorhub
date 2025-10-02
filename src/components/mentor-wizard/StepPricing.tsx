@@ -71,12 +71,20 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
   ];
 
   const calculateFirstSessionPrice = () => {
-    if (!data.first_session_discount || data.price_per_session === 0) {
-      return data.price_per_session;
+    if (!data.first_session_discount || !data.price_per_session || !data.first_session_discount_value) {
+      return null;
     }
 
     const discount = (data.price_per_session * data.first_session_discount_value) / 100;
     return Math.round(data.price_per_session - discount);
+  };
+
+  const hasValidPrice = () => {
+    return data.price_per_session > 0;
+  };
+
+  const hasValidDiscountPrice = () => {
+    return data.first_session_discount && hasValidPrice() && data.first_session_discount_value > 0;
   };
 
   const calculatePackagePrice = (pkg: PricingPackage) => {
@@ -253,35 +261,45 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
               </div>
 
               {/* Visual Price Display */}
-              {data.price_per_session > 0 && (
-                <div className="bg-white rounded-xl p-5 border-2 border-green-200 shadow-sm">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">İlk Seans Fiyatı</span>
+              <div className="bg-white rounded-xl p-5 border-2 border-green-200 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">İlk Seans Fiyatı</span>
+                  {data.first_session_discount_value > 0 && (
                     <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
                       %{data.first_session_discount_value} indirim
                     </span>
-                  </div>
-                  <div className="flex items-center justify-end space-x-3">
-                    <span className="text-xl text-gray-400 line-through">
-                      {data.price_per_session}₺
+                  )}
+                </div>
+                <div className="flex items-center justify-end space-x-3">
+                  {hasValidDiscountPrice() ? (
+                    <>
+                      <span className="text-xl text-gray-400 line-through">
+                        {data.price_per_session}₺
+                      </span>
+                      <span className="text-3xl font-bold text-green-600 animate-slideIn">
+                        {calculateFirstSessionPrice()}₺
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-xl text-gray-500">
+                      {hasValidPrice() ? '—' : 'Önce seans fiyatı belirleyin'}
                     </span>
-                    <span className="text-3xl font-bold text-green-600 animate-slideIn">
-                      {calculateFirstSessionPrice()}₺
-                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Dynamic Motivational Message */}
+              {hasValidDiscountPrice() && (
+                <div className="flex items-start space-x-2 text-sm text-blue-800 bg-blue-100 rounded-lg p-3">
+                  <Sparkles className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">İlk seans indirimi ekleyerek yeni mentee kazanımını kolaylaştırdın!</p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Seçtiğin %{data.first_session_discount_value} indirim yeni mentee kazanımını ~%{getDiscountImpact()} artırır.
+                    </p>
                   </div>
                 </div>
               )}
-
-              {/* Dynamic Motivational Message */}
-              <div className="flex items-start space-x-2 text-sm text-blue-800 bg-blue-100 rounded-lg p-3">
-                <Sparkles className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium">İlk seans indirimi ekleyerek yeni mentee kazanımını kolaylaştırdın!</p>
-                  <p className="text-xs text-blue-700 mt-1">
-                    Seçtiğin %{data.first_session_discount_value} indirim yeni mentee kazanımını ~%{getDiscountImpact()} artırır.
-                  </p>
-                </div>
-              </div>
             </div>
           )}
         </div>
@@ -351,7 +369,7 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
                   </div>
 
                   {/* Price Display */}
-                  {data.price_per_session > 0 && (
+                  {data.price_per_session > 0 ? (
                     <div className="space-y-1">
                       <div className="text-sm text-gray-500 line-through">
                         {originalPrice}₺
@@ -359,6 +377,10 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
                       <div className="text-xl font-bold text-green-600">
                         {packagePrice}₺
                       </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500 italic">
+                      Fiyat belirlenince hesaplanacak
                     </div>
                   )}
                 </button>
@@ -399,8 +421,8 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
                 </div>
 
                 {/* First Session Discount */}
-                {data.first_session_discount && (
-                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                {data.first_session_discount && hasValidDiscountPrice() && (
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200 animate-fadeIn">
                     <div>
                       <span className="text-sm font-medium text-green-900">İlk Seans</span>
                       <span className="ml-2 text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded-full">
