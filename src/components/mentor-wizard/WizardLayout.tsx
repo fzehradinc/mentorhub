@@ -30,11 +30,11 @@ const motivationalQuotes = [
 
 const stepTitles = [
   "Temel Bilgiler",
-  "Uzmanlık & Etiketler", 
+  "Uzmanlık & Etiketler",
   "Müsaitlik",
   "Ücret & İndirim",
   "Medya & Bio",
-  "Önizleme & Yayınla"
+  "Önizleme & Gönder"
 ];
 
 /**

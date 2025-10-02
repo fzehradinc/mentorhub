@@ -5,9 +5,7 @@ import StepExpertise from '../components/mentor-wizard/StepExpertise';
 import StepAvailability from '../components/mentor-wizard/StepAvailability';
 import StepPricing from '../components/mentor-wizard/StepPricing';
 import StepMediaBio from '../components/mentor-wizard/StepMediaBio';
-import StepReviewPublish from '../components/mentor-wizard/StepReviewPublish';
-import StepPublishing from '../components/mentor-wizard/StepPublishing';
-import StepVerification from '../components/mentor-wizard/StepVerification';
+import StepReviewSubmit from '../components/mentor-wizard/StepReviewSubmit';
 import { useAutosave } from '../hooks/useAutosave';
 
 interface TimeSlot {
@@ -64,16 +62,8 @@ interface MentorProfileData {
   video_intro_url: string;
   long_bio: string;
   
-  // Step 6: Publishing
-  profile_status: 'draft' | 'published' | 'hidden';
-  visibility: 'public' | 'private' | 'unlisted';
-  seo_title: string;
-  seo_description: string;
-  seo_image_url: string;
-  seo_keywords: string[];
-  ga4_id: string;
-  fb_pixel_id: string;
-  hotjar_id: string;
+  // Step 6: Status
+  status: 'draft' | 'review' | 'published';
 }
 
 interface MentorProfileWizardProps {
@@ -130,15 +120,7 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
     long_bio: '',
     
     // Step 6
-    profile_status: 'draft',
-    visibility: 'public',
-    seo_title: '',
-    seo_description: '',
-    seo_image_url: '',
-    seo_keywords: [],
-    ga4_id: '',
-    fb_pixel_id: '',
-    hotjar_id: ''
+    status: 'draft'
   });
 
   const totalSteps = 6;
@@ -295,31 +277,44 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
     alert('Profil önizlemesi açılacak (Demo)');
   };
 
-  const handlePublish = async () => {
-    if (!validateCurrentStep()) {
-      return;
-    }
-
+  const handleSubmitForReview = async () => {
     setIsPublishing(true);
-    
+
     try {
-      // Mock API call - POST /mentors/{id}/publish
-      console.log('Publishing mentor profile:', profileData);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      alert('🎉 Profiliniz başarıyla yayınlandı! Mentee\'ler artık sizi görebilir.');
-      
-      // Generate mock profile URL
-      const profileSlug = profileData.display_name.toLowerCase().replace(/\s+/g, '-');
-      console.log(`Profile URL: /mentors/${profileSlug}`);
-      
-      // Navigate back or to mentor dashboard
-      onBack();
+      // Mock API call - POST /mentors/{id}/submit
+      console.log('Submitting profile for review:', profileData);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Update status to review
+      setProfileData(prev => ({
+        ...prev,
+        status: 'review'
+      }));
+
+      // Show success toast
+      alert('✉️ Profilin incelemeye gönderildi. Onaylandığında sana haber vereceğiz!');
     } catch (error) {
-      console.error('Publishing error:', error);
-      alert('Yayınlama sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+      console.error('Submit error:', error);
+      alert('Gönderim sırasında bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setIsPublishing(false);
+    }
+  };
+
+  const handleWithdrawReview = async () => {
+    try {
+      // Mock API call - POST /mentors/{id}/withdraw
+      console.log('Withdrawing profile from review');
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      setProfileData(prev => ({
+        ...prev,
+        status: 'draft'
+      }));
+
+      alert('İnceleme iptal edildi. Profilin taslak moduna alındı.');
+    } catch (error) {
+      console.error('Withdraw error:', error);
     }
   };
 
@@ -395,24 +390,30 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
         );
       case 5:
         return (
-          <StepPublishing
+          <StepReviewSubmit
             data={{
-              profile_status: profileData.profile_status,
-              visibility: profileData.visibility,
-              seo_title: profileData.seo_title,
-              seo_description: profileData.seo_description,
-              seo_image_url: profileData.seo_image_url,
-              seo_keywords: profileData.seo_keywords,
-              ga4_id: profileData.ga4_id,
-              fb_pixel_id: profileData.fb_pixel_id,
-              hotjar_id: profileData.hotjar_id
+              full_name: profileData.display_name,
+              title: profileData.title,
+              short_bio: profileData.short_bio,
+              long_bio: profileData.long_bio,
+              avatar_upload: profileData.avatar_upload,
+              cover_upload: profileData.cover_upload,
+              video_intro_url: profileData.video_intro_url,
+              expertise_areas: profileData.skills.map(skill => ({ category: profileData.primary_category, skill })),
+              price_per_session: profileData.price_per_session,
+              price_tier: 'orta-seviye',
+              first_session_discount: profileData.first_session_discount,
+              first_session_discount_value: profileData.first_session_discount_value,
+              packages: profileData.packages,
+              availability: profileData.time_slots.map(slot => ({
+                day: slot.day,
+                slots: [{ start: slot.startTime, end: slot.endTime }]
+              })),
+              status: profileData.status
             }}
-            onChange={updateProfileData}
-            errors={errors}
-            onPreview={handlePreview}
-            onPublish={handlePublish}
-            isPublishing={isPublishing}
-            profileData={profileData}
+            onSubmitForReview={handleSubmitForReview}
+            onWithdrawReview={handleWithdrawReview}
+            onGoToStep={handleStepChange}
           />
         );
       default:
