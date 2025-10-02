@@ -31,6 +31,11 @@ export interface Mentor extends User {
   profileUrl: string;
   imageUrl: string;
   achievements: string[];
+  countryCode: string;
+  statusBadge: 'Available ASAP' | 'Advance' | 'Top rated';
+  sessions: number;
+  experienceYears: number;
+  attendance: number;
   socialLinks: {
     linkedin?: string;
     github?: string;
@@ -38,20 +43,6 @@ export interface Mentor extends User {
   };
   availableSlots: TimeSlot[];
   isVerified: boolean;
-}
-
-export interface Mentee extends User {
-  role: 'mentee';
-  goals: string[];
-  interests: string[];
-  educationInfo: string;
-  currentStatus: string;
-}
-
-export interface TimeSlot {
-  id: string;
-  date: string;
-  startTime: string;
   endTime: string;
   isAvailable: boolean;
 }

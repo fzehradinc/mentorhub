@@ -50,20 +50,12 @@ export const mockMentors: Mentor[] = [
     ],
     isVerified: true,
     createdAt: '2024-01-01T00:00:00Z',
-    isNewMentor: false,
-    isAvailableNow: true,
-    isAcademic: false,
-    isDataScienceOrSoftware: true,
-    isFemale: true,
-    isEntrepreneur: false,
-    hasInternationalExperience: true,
-    tags: {
-      education: ['Bilkent Üniversitesi'],
-      degree: ['YL Mezunu'],
-      company: ['ASELSAN'],
-      field: ['Elektronik Mühendisliği', 'STEM'],
-      goal: ['Kadın Liderlik', 'Mühendislik Kariyeri']
-    }
+    countryCode: 'tr',
+    statusBadge: 'Available ASAP',
+    sessions: 210,
+    reviews: 48,
+    experienceYears: 8,
+    attendance: 99
   },
   {
     id: '2',
@@ -107,20 +99,12 @@ export const mockMentors: Mentor[] = [
     ],
     isVerified: true,
     createdAt: '2024-02-01T00:00:00Z',
-    isNewMentor: false,
-    isAvailableNow: false,
-    isAcademic: false,
-    isDataScienceOrSoftware: false,
-    isFemale: false,
-    isEntrepreneur: true,
-    hasInternationalExperience: true,
-    tags: {
-      education: ['Boğaziçi Üniversitesi'],
-      degree: ['Doktora Mezunu'],
-      company: ['Trendyol'],
-      field: ['Veri Bilimi', 'Machine Learning'],
-      goal: ['Veri Bilimi Geçişi', 'Akademik Kariyer']
-    }
+    countryCode: 'tr',
+    statusBadge: 'Top rated',
+    sessions: 156,
+    reviews: 67,
+    experienceYears: 7,
+    attendance: 95
   },
   {
     id: '3',
@@ -165,20 +149,12 @@ export const mockMentors: Mentor[] = [
     ],
     isVerified: true,
     createdAt: '2024-03-01T00:00:00Z',
-    isNewMentor: false,
-    isAvailableNow: true,
-    isAcademic: false,
-    isDataScienceOrSoftware: false,
-    isFemale: true,
-    isEntrepreneur: false,
-    hasInternationalExperience: false,
-    tags: {
-      education: ['İTÜ'],
-      degree: ['Lisans'],
-      company: ['TechStart'],
-      field: ['Girişimcilik', 'Teknoloji'],
-      goal: ['Startup Kurma', 'Yatırım Alma']
-    }
+    countryCode: 'tr',
+    statusBadge: 'Advance',
+    sessions: 89,
+    reviews: 34,
+    experienceYears: 5,
+    attendance: 97
   },
   {
     id: '4',
@@ -222,20 +198,12 @@ export const mockMentors: Mentor[] = [
     ],
     isVerified: true,
     createdAt: '2024-04-01T00:00:00Z',
-    isNewMentor: false,
-    isAvailableNow: false,
-    isAcademic: true,
-    isDataScienceOrSoftware: false,
-    isFemale: false,
-    isEntrepreneur: false,
-    hasInternationalExperience: true,
-    tags: {
-      education: ['ODTÜ'],
-      degree: ['Doktora'],
-      company: ['ODTÜ'],
-      field: ['Akademik Kariyer', 'Araştırma'],
-      goal: ['Yurt Dışı Eğitim', 'Akademik Kariyer']
-    }
+    countryCode: 'tr',
+    statusBadge: 'Top rated',
+    sessions: 245,
+    reviews: 89,
+    experienceYears: 15,
+    attendance: 98
   },
   {
     id: '5',
@@ -279,20 +247,12 @@ export const mockMentors: Mentor[] = [
     ],
     isVerified: true,
     createdAt: '2024-05-01T00:00:00Z',
-    isNewMentor: false,
-    isAvailableNow: true,
-    isAcademic: false,
-    isDataScienceOrSoftware: false,
-    isFemale: true,
-    isEntrepreneur: false,
-    hasInternationalExperience: false,
-    tags: {
-      education: ['Sabancı Üniversitesi'],
-      degree: ['YL Mezunu'],
-      company: ['Getir'],
-      field: ['UX Design', 'Tasarım'],
-      goal: ['UX Geçişi', 'Tasarım Kariyeri']
-    }
+    countryCode: 'tr',
+    statusBadge: 'Available ASAP',
+    sessions: 134,
+    reviews: 52,
+    experienceYears: 6,
+    attendance: 96
   },
   {
     id: '6',
@@ -337,20 +297,12 @@ export const mockMentors: Mentor[] = [
     ],
     isVerified: true,
     createdAt: '2024-06-01T00:00:00Z',
-    isNewMentor: false,
-    isAvailableNow: false,
-    isAcademic: false,
-    isDataScienceOrSoftware: true,
-    isFemale: false,
-    isEntrepreneur: false,
-    hasInternationalExperience: false,
-    tags: {
-      education: ['Hacettepe Üniversitesi'],
-      degree: ['Lisans Mezunu'],
-      company: ['Hepsiburada'],
-      field: ['Backend Development', 'Yazılım'],
-      goal: ['Yazılım Geçişi', 'Backend Uzmanlığı']
-    }
+    countryCode: 'tr',
+    statusBadge: 'Advance',
+    sessions: 178,
+    reviews: 73,
+    experienceYears: 8,
+    attendance: 94
   }
 ];
 

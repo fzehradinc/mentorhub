@@ -48,13 +48,30 @@ const HomePage: React.FC<HomePageProps> = ({
   const mentorCounts = useMemo(() => {
     const counts: Record<CategoryFilter, number> = {
       'all': mockMentors.length,
-      'new': mockMentors.filter(m => m.isNewMentor).length,
-      'available-now': mockMentors.filter(m => m.isAvailableNow).length,
-      'academic': mockMentors.filter(m => m.isAcademic).length,
-      'data-science-software': mockMentors.filter(m => m.isDataScienceOrSoftware).length,
-      'female': mockMentors.filter(m => m.isFemale).length,
-      'entrepreneur': mockMentors.filter(m => m.isEntrepreneur).length,
-      'international': mockMentors.filter(m => m.hasInternationalExperience).length
+      'new': mockMentors.filter(m => new Date(m.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length,
+      'available-now': mockMentors.filter(m => m.statusBadge === 'Available ASAP').length,
+      'academic': mockMentors.filter(m => m.title.toLowerCase().includes('dr') || m.title.toLowerCase().includes('prof')).length,
+      'data-science-software': mockMentors.filter(m => 
+        m.expertiseAreas.some(area => 
+          area.toLowerCase().includes('veri') || 
+          area.toLowerCase().includes('yazılım') || 
+          area.toLowerCase().includes('software') ||
+          area.toLowerCase().includes('data')
+        )
+      ).length,
+      'female': mockMentors.filter(m => ['Fatma', 'Zeynep', 'Ayşe'].some(name => m.name.includes(name))).length,
+      'entrepreneur': mockMentors.filter(m => 
+        m.title.toLowerCase().includes('ceo') || 
+        m.title.toLowerCase().includes('founder') || 
+        m.title.toLowerCase().includes('girişimci')
+      ).length,
+      'international': mockMentors.filter(m => 
+        m.achievements.some(achievement => 
+          achievement.toLowerCase().includes('international') ||
+          achievement.toLowerCase().includes('global') ||
+          achievement.toLowerCase().includes('yurt dışı')
+        )
+      ).length
     };
     return counts;
   }, []);
@@ -108,10 +125,10 @@ const HomePage: React.FC<HomePageProps> = ({
       if (selectedCategory !== 'all') {
         switch (selectedCategory) {
           case 'new':
-            if (!mentor.createdAt || new Date(mentor.createdAt) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) return false;
+            if (new Date(mentor.createdAt) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) return false;
             break;
           case 'available-now':
-            if (!mentor.available) return false;
+            if (mentor.statusBadge !== 'Available ASAP') return false;
             break;
           case 'academic':
             if (!mentor.title.toLowerCase().includes('dr') && !mentor.title.toLowerCase().includes('prof')) return false;
