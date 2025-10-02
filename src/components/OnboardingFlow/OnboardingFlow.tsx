@@ -249,9 +249,9 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
           <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">💰 Bütçe Aralığı</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
-              { key: '500-1000', label: '500-1000 TL', desc: 'Uygun fiyat', color: 'green' },
-              { key: '1000-2000', label: '1000-2000 TL', desc: 'Orta segment', color: 'blue' },
-              { key: '2000+', label: '2000+ TL', desc: 'Premium', color: 'purple' }
+              { key: '0-500', label: '0-500 TL', desc: 'Uygun fiyat', color: 'green' },
+              { key: '500-1000', label: '500-1000 TL', desc: 'Orta segment', color: 'blue' },
+              { key: '1000+', label: '1000+ TL', desc: 'Premium', color: 'purple' }
             ].map((budget) => (
               <button
                 key={budget.key}
