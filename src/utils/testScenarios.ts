@@ -439,3 +439,229 @@ export const complianceChecklist = {
 };
 
 export default testScenarios;
+
+/**
+ * API Test Scenarios for Mentor Profile System
+ */
+export const mentorApiTestScenarios = [
+  // Mentor CRUD Tests
+  {
+    id: 'API-MENTOR-001',
+    category: 'api' as const,
+    title: 'Create New Mentor Profile',
+    description: 'POST /mentors should create new mentor with draft status',
+    steps: [
+      'Send POST request to /mentors with valid JWT token',
+      'Include required fields: display_name, title, short_bio, primary_category, languages, timezone',
+      'Check response status and created mentor object'
+    ],
+    expectedResult: 'HTTP 201 Created, mentor object with draft status, valid UUID assigned',
+    priority: 'high' as const,
+    kvkkCompliant: true
+  },
+  {
+    id: 'API-MENTOR-002',
+    category: 'api' as const,
+    title: 'Autosave Draft Update',
+    description: 'PATCH /mentors/{id}/draft should accept partial updates',
+    steps: [
+      'Send PATCH request to /mentors/{id}/draft',
+      'Include partial data: skills array and price_per_session',
+      'Verify autosave response and draft storage'
+    ],
+    expectedResult: 'HTTP 200 OK, draft saved message, updated_at timestamp updated',
+    priority: 'high' as const,
+    kvkkCompliant: true
+  },
+  {
+    id: 'API-MENTOR-003',
+    category: 'api' as const,
+    title: 'Publish Profile with Slug Generation',
+    description: 'POST /mentors/{id}/publish should generate unique slug and make profile public',
+    steps: [
+      'Send POST request to /mentors/{id}/publish with admin token',
+      'Check slug generation from display_name and title',
+      'Verify profile becomes accessible via /public/mentors/{slug}'
+    ],
+    expectedResult: 'HTTP 200 OK, unique slug generated, publish_status=published, public_url returned',
+    priority: 'high' as const,
+    kvkkCompliant: true
+  },
+  
+  // Validation Tests
+  {
+    id: 'API-VALIDATION-001',
+    category: 'api' as const,
+    title: 'Short Bio Length Validation',
+    description: 'short_bio field should enforce 80-160 character limit',
+    steps: [
+      'Send POST request with short_bio < 80 characters',
+      'Send POST request with short_bio > 160 characters',
+      'Check validation error responses'
+    ],
+    expectedResult: 'HTTP 400 Bad Request, error.field="short_bio", specific length error message',
+    priority: 'high' as const,
+    kvkkCompliant: false
+  },
+  {
+    id: 'API-VALIDATION-002',
+    category: 'api' as const,
+    title: 'Price Minimum Validation',
+    description: 'price_per_session should enforce minimum 100 TRY',
+    steps: [
+      'Send PATCH request with price_per_session = 50',
+      'Check validation error response'
+    ],
+    expectedResult: 'HTTP 400 Bad Request, error.field="price_per_session", minimum price error',
+    priority: 'medium' as const,
+    kvkkCompliant: false
+  },
+  
+  // Security Tests
+  {
+    id: 'API-SECURITY-001',
+    category: 'security' as const,
+    title: 'JWT Authentication Required',
+    description: 'Protected endpoints should require valid JWT token',
+    steps: [
+      'Send request to /mentors without Authorization header',
+      'Send request with invalid JWT token',
+      'Send request with valid JWT token'
+    ],
+    expectedResult: 'No JWT: 401 Unauthorized, Invalid JWT: 401 Unauthorized, Valid JWT: 200 OK',
+    priority: 'high' as const,
+    kvkkCompliant: true
+  },
+  {
+    id: 'API-SECURITY-002',
+    category: 'security' as const,
+    title: 'Mentor Can Only Access Own Data',
+    description: 'Mentors should only be able to access their own profile data',
+    steps: [
+      'Login as mentor A, try to access mentor B profile',
+      'Check access control enforcement',
+      'Verify RLS policies work correctly'
+    ],
+    expectedResult: 'HTTP 403 Forbidden when accessing other mentor data, 200 OK for own data',
+    priority: 'high' as const,
+    kvkkCompliant: true
+  },
+  
+  // Media Upload Tests
+  {
+    id: 'API-MEDIA-001',
+    category: 'api' as const,
+    title: 'Avatar Upload Flow',
+    description: 'Complete avatar upload process should work end-to-end',
+    steps: [
+      'POST /mentors/{id}/media/avatar-upload-url with valid content_type',
+      'Upload file to returned presigned URL',
+      'PATCH /mentors/{id}/media/commit with final URL'
+    ],
+    expectedResult: 'Upload URL generated, file uploaded successfully, avatar_url updated in profile',
+    priority: 'medium' as const,
+    kvkkCompliant: false
+  },
+  
+  // Public Access Tests
+  {
+    id: 'API-PUBLIC-001',
+    category: 'api' as const,
+    title: 'Public Profile Access by Slug',
+    description: 'GET /public/mentors/{slug} should return published profiles only',
+    steps: [
+      'Create mentor with publish_status=draft',
+      'Try to access via /public/mentors/{slug}',
+      'Publish mentor and try again'
+    ],
+    expectedResult: 'Draft: 404 Not Found, Published: 200 OK with full profile data',
+    priority: 'high' as const,
+    kvkkCompliant: false
+  }
+];
+
+/**
+ * Database Test Scenarios
+ */
+export const databaseTestScenarios = [
+  {
+    id: 'DB-001',
+    category: 'database' as const,
+    title: 'Mentor Table Constraints',
+    description: 'All CHECK constraints should be enforced',
+    steps: [
+      'Insert mentor with display_name length < 2',
+      'Insert mentor with price_per_session < 100',
+      'Insert mentor with invalid primary_category'
+    ],
+    expectedResult: 'All inserts should fail with constraint violation errors',
+    priority: 'high' as const,
+    kvkkCompliant: false
+  },
+  {
+    id: 'DB-002',
+    category: 'database' as const,
+    title: 'RLS Policy Enforcement',
+    description: 'Row Level Security should prevent unauthorized access',
+    steps: [
+      'Set JWT context for user A',
+      'Try to SELECT mentor data for user B',
+      'Verify no data returned'
+    ],
+    expectedResult: 'RLS blocks access to other users data, only own data accessible',
+    priority: 'high' as const,
+    kvkkCompliant: true
+  },
+  {
+    id: 'DB-003',
+    category: 'database' as const,
+    title: 'Cascade Delete Functionality',
+    description: 'Deleting mentor should cascade to related tables',
+    steps: [
+      'Create mentor with time_slots, packages, and badges',
+      'DELETE mentor record',
+      'Check related tables for orphaned records'
+    ],
+    expectedResult: 'All related records (time_slots, packages, badges) deleted automatically',
+    priority: 'medium' as const,
+    kvkkCompliant: true
+  }
+];
+
+/**
+ * Integration Test Scenarios
+ */
+export const integrationTestScenarios = [
+  {
+    id: 'INT-001',
+    category: 'integration' as const,
+    title: 'Complete Mentor Onboarding Flow',
+    description: 'End-to-end mentor profile creation and publishing',
+    steps: [
+      'Create mentor via POST /mentors',
+      'Update profile through wizard steps using PATCH /mentors/{id}/draft',
+      'Upload avatar and cover images',
+      'Submit for review via POST /mentors/{id}/submit',
+      'Publish via POST /mentors/{id}/publish (admin)',
+      'Verify public access via GET /public/mentors/{slug}'
+    ],
+    expectedResult: 'Complete flow works, mentor visible publicly with all data',
+    priority: 'high' as const,
+    kvkkCompliant: true
+  },
+  {
+    id: 'INT-002',
+    category: 'integration' as const,
+    title: 'Wizard Autosave Integration',
+    description: 'Wizard UI should properly autosave to draft endpoint',
+    steps: [
+      'Open mentor wizard',
+      'Fill form fields and wait for autosave trigger',
+      'Verify PATCH /mentors/{id}/draft calls',
+      'Refresh page and check data persistence'
+    ],
+    expectedResult: 'Form data persists across page refreshes, autosave status shown in UI',
+    priority: 'medium' as const,
+    kvkkCompliant: false
+  }
+];
