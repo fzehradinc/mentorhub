@@ -35,11 +35,7 @@ const RoleCard: React.FC<RoleCardProps> = ({
   onShowOnboarding
 }) => {
   const handleClick = () => {
-    if (roleValue === 'mentee' && onShowOnboarding) {
-      onShowOnboarding();
-    } else {
-      onClick(roleValue, href);
-    }
+    onClick(roleValue, href);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -14,6 +14,16 @@ const AppContent: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>('home');
   const [selectedMentorId, setSelectedMentorId] = useState<string>('');
 
+  // Listen for onboarding trigger from role selection
+  React.useEffect(() => {
+    const handleShowOnboarding = () => {
+      setCurrentView('onboarding');
+    };
+
+    window.addEventListener('showOnboarding', handleShowOnboarding);
+    return () => window.removeEventListener('showOnboarding', handleShowOnboarding);
+  }, []);
+
   const handleViewProfile = (mentorId: string) => {
     setSelectedMentorId(mentorId);
     setCurrentView('mentor-detail');

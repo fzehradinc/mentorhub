@@ -62,9 +62,14 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
     // Close modal and navigate
     onClose();
     
-    // For demo purposes, we'll use a callback instead of window.location
-    // In a real app, this would navigate to the appropriate page
-    console.log(`Selected role: ${role}, href: ${href}`);
+    // Navigate based on role selection
+    if (role === 'mentee') {
+      // Trigger onboarding flow for mentees
+      window.dispatchEvent(new CustomEvent('showOnboarding'));
+    } else {
+      // For mentors, could navigate to mentor onboarding
+      console.log(`Selected role: ${role}, href: ${href}`);
+    }
   };
 
   const handleExploreClick = () => {
