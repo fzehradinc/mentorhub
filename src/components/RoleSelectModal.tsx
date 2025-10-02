@@ -59,8 +59,16 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
     // Save role to localStorage
     setRole(role);
     
-    // Navigate to onboarding
-    window.location.href = href;
+    // Close modal and navigate
+    onClose();
+    
+    if (role === 'mentee') {
+      // Navigate to onboarding flow for mentees
+      window.location.href = '/onboarding';
+    } else {
+      // Navigate to mentor profile setup
+      window.location.href = href;
+    }
   };
 
   const handleExploreClick = () => {

@@ -6,6 +6,7 @@ interface LayoutProps {
   onShowAuth?: () => void;
   onShowAppointments?: () => void;
   onShowMessages?: () => void;
+  onShowOnboarding?: () => void;
 }
 
 /**
@@ -15,8 +16,9 @@ interface LayoutProps {
  * - onShowAuth: Function to show authentication page
  * - onShowAppointments: Function to show appointments page
  * - onShowMessages: Function to show messages page
+ * - onShowOnboarding: Function to show onboarding page
  */
-const Layout: React.FC<LayoutProps> = ({ children, onShowAuth, onShowAppointments, onShowMessages }) => {
+const Layout: React.FC<LayoutProps> = ({ children, onShowAuth, onShowAppointments, onShowMessages, onShowOnboarding }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {

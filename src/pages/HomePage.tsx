@@ -14,6 +14,7 @@ interface HomePageProps {
   onShowAuth: () => void;
   onShowAppointments: () => void;
   onShowMessages: () => void;
+  onShowOnboarding: () => void;
 }
 
 /**
@@ -23,12 +24,14 @@ interface HomePageProps {
  * - onShowAuth: Function to show authentication page
  * - onShowAppointments: Function to show appointments page
  * - onShowMessages: Function to show messages page
+ * - onShowOnboarding: Function to show onboarding page
  */
 const HomePage: React.FC<HomePageProps> = ({ 
   onViewProfile, 
   onShowAuth, 
   onShowAppointments, 
-  onShowMessages 
+  onShowMessages,
+  onShowOnboarding
 }) => {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');

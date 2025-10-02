@@ -5,8 +5,9 @@ import MentorDetailPage from './pages/MentorDetailPage';
 import AuthPage from './pages/AuthPage';
 import AppointmentsPage from './pages/AppointmentsPage';
 import MessagesPage from './pages/MessagesPage';
+import OnboardingPage from './pages/OnboardingPage';
 
-type AppView = 'home' | 'mentor-detail' | 'auth' | 'appointments' | 'messages';
+type AppView = 'home' | 'mentor-detail' | 'auth' | 'appointments' | 'messages' | 'onboarding';
 
 const AppContent: React.FC = () => {
   const { user } = useAuth();
@@ -39,6 +40,10 @@ const AppContent: React.FC = () => {
     setCurrentView('messages');
   };
 
+  const handleShowOnboarding = () => {
+    setCurrentView('onboarding');
+  };
+
   switch (currentView) {
     case 'mentor-detail':
       return (
@@ -53,6 +58,8 @@ const AppContent: React.FC = () => {
       return <AppointmentsPage onBack={handleBackToHome} />;
     case 'messages':
       return <MessagesPage onBack={handleBackToHome} />;
+    case 'onboarding':
+      return <OnboardingPage onBack={handleBackToHome} />;
     default:
       return (
         <HomePage 
@@ -60,6 +67,7 @@ const AppContent: React.FC = () => {
           onShowAuth={handleShowAuth} 
           onShowAppointments={handleShowAppointments}
           onShowMessages={handleShowMessages}
+          onShowOnboarding={handleShowOnboarding}
         />
       );
   }
