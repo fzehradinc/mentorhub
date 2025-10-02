@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Mail, Target, DollarSign, Clock, ArrowRight, UserCircle } from 'lucide-react';
+import { X, User, Mail, Target, DollarSign, Clock, ArrowRight, CircleUser as UserCircle } from 'lucide-react';
 import DataPrivacyConsent from './DataPrivacyConsent';
 
 interface MenteeData {
