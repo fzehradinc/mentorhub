@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, ArrowRight, Users, Star, Award } from 'lucide-react';
 import AvatarStrip from './AvatarStrip';
+import RoleSelectModal from './RoleSelectModal';
 import { trustBadges, kpis, heroContent } from '../data/trustBadges';
 
 interface HeroBannerProps {
@@ -20,24 +21,32 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
   title,
   subtitle,
   primaryCtaLabel,
-  primaryCtaHref = '#', // TODO: Update when /kayit route is available
+  primaryCtaHref = '#',
   secondaryCtaLabel,
-  secondaryCtaHref = '#', // TODO: Update when /mentorler route is available
+  secondaryCtaHref = '/mentorler',
   showSearch = true,
   kpis: propKpis,
   badges = trustBadges,
   language = 'tr'
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const content = heroContent[language];
   const displayKpis = propKpis || kpis;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // TODO: Update when /mentorler route is available
-      window.location.href = `/mentorler?query=${encodeURIComponent(searchQuery.trim())}`;
+      window.location.href = `/mentorler?search=${encodeURIComponent(searchQuery.trim())}`;
     }
+  };
+
+  const handlePrimaryCtaClick = () => {
+    setIsRoleModalOpen(true);
+  };
+
+  const handleSecondaryCtaClick = () => {
+    window.location.href = secondaryCtaHref;
   };
 
   const getKpiIcon = (label: string) => {
@@ -118,22 +127,23 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center xl:justify-start mb-12">
-              <a
-                href={primaryCtaHref}
+              <button
+                onClick={handlePrimaryCtaClick}
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 min-h-[44px]"
                 aria-label={primaryCtaLabel || content.primaryCtaLabel}
               >
                 {primaryCtaLabel || content.primaryCtaLabel}
                 <ArrowRight className="ml-2 w-5 h-5" />
-              </a>
+              </button>
               
-              <a
-                href={secondaryCtaHref}
+              <button
+                onClick={handleSecondaryCtaClick}
                 className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-blue-600 bg-white border-2 border-blue-600 rounded-xl hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md min-h-[44px]"
                 aria-label={secondaryCtaLabel || content.secondaryCtaLabel}
               >
-                {secondaryCtaLabel || content.secondaryCtaLabel}
-              </a>
+                <span>{secondaryCtaLabel || content.secondaryCtaLabel}</span>
+                <ArrowRight className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
           </div>
 
@@ -164,6 +174,12 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Role Selection Modal */}
+      <RoleSelectModal
+        isOpen={isRoleModalOpen}
+        onClose={() => setIsRoleModalOpen(false)}
+      />
 
       {/* Custom Styles */}
       <style jsx>{`
