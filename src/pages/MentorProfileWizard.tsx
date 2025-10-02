@@ -6,6 +6,7 @@ import StepAvailability from '../components/mentor-wizard/StepAvailability';
 import StepPricing from '../components/mentor-wizard/StepPricing';
 import StepMediaBio from '../components/mentor-wizard/StepMediaBio';
 import StepReviewPublish from '../components/mentor-wizard/StepReviewPublish';
+import StepPublishing from '../components/mentor-wizard/StepPublishing';
 import StepVerification from '../components/mentor-wizard/StepVerification';
 import { useAutosave } from '../hooks/useAutosave';
 
@@ -61,6 +62,17 @@ interface MentorProfileData {
   cover_upload: string;
   video_intro_url: string;
   long_bio: string;
+  
+  // Step 6: Publishing
+  profile_status: 'draft' | 'published' | 'hidden';
+  visibility: 'public' | 'private' | 'unlisted';
+  seo_title: string;
+  seo_description: string;
+  seo_image_url: string;
+  seo_keywords: string[];
+  ga4_id: string;
+  fb_pixel_id: string;
+  hotjar_id: string;
 }
 
 interface MentorProfileWizardProps {
@@ -113,10 +125,21 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
     avatar_upload: '',
     cover_upload: '',
     video_intro_url: '',
-    long_bio: ''
+    long_bio: '',
+    
+    // Step 6
+    profile_status: 'draft',
+    visibility: 'public',
+    seo_title: '',
+    seo_description: '',
+    seo_image_url: '',
+    seo_keywords: [],
+    ga4_id: '',
+    fb_pixel_id: '',
+    hotjar_id: ''
   });
 
-  const totalSteps = 7;
+  const totalSteps = 6;
 
   // Autosave hook
   const { saveNow } = useAutosave(profileData, {
@@ -353,15 +376,26 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
             errors={errors}
           />
         );
-      case 7:
+      case 5:
         return (
-          <StepReviewPublish
-            data={profileData}
+          <StepPublishing
+            data={{
+              profile_status: profileData.profile_status,
+              visibility: profileData.visibility,
+              seo_title: profileData.seo_title,
+              seo_description: profileData.seo_description,
+              seo_image_url: profileData.seo_image_url,
+              seo_keywords: profileData.seo_keywords,
+              ga4_id: profileData.ga4_id,
+              fb_pixel_id: profileData.fb_pixel_id,
+              hotjar_id: profileData.hotjar_id
+            }}
             onChange={updateProfileData}
             errors={errors}
             onPreview={handlePreview}
             onPublish={handlePublish}
             isPublishing={isPublishing}
+            profileData={profileData}
           />
         );
       default:
