@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, X } from 'lucide-react';
+import AccountCreateStep from '../AccountCreateStep';
+import { guestSession } from '../../utils/guestSession';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface OnboardingData {
   category: string;
@@ -15,10 +18,14 @@ interface OnboardingData {
 interface OnboardingFlowProps {
   onComplete: (data: OnboardingData) => void;
   onClose: () => void;
+  onShowLogin?: () => void;
 }
 
-const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) => {
+const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose, onShowLogin }) => {
+  const { signUp, user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [accountCreating, setAccountCreating] = useState(false);
+  const [guestSessionId, setGuestSessionId] = useState<string>('');
   const [data, setData] = useState<OnboardingData>({
     category: '',
     goalLevel: '',
@@ -30,7 +37,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
     marketingConsent: false
   });
 
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   const motivationalQuotes = [
     "Her yolculuk küçük bir adımla başlar.",
@@ -38,25 +45,75 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
     "Doğru iletişim, en hızlı ilerlemenin anahtarıdır.",
     "Bugünkü seviyen, yarının potansiyeline engel değil.",
     "Güvenli bir yolculuk için doğru adımları atıyoruz.",
+    "Hesabın hazır, yolculuğun başlasın!",
     "Başarı, doğru rehberle çok daha hızlı gelir."
   ];
+
+  useEffect(() => {
+    const sessionId = guestSession.ensureSession();
+    setGuestSessionId(sessionId);
+
+    const savedData = guestSession.getAnswers();
+    if (savedData.currentStep > 0) {
+      setCurrentStep(savedData.currentStep);
+      setData(prev => ({ ...prev, ...savedData.answers }));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (currentStep > 0 && currentStep <= totalSteps) {
+      guestSession.saveAnswers({
+        answers: data,
+        currentStep,
+        completed: false,
+      });
+    }
+  }, [currentStep, data]);
 
   const handleNext = () => {
     if (currentStep === 5 && !data.consent) {
       alert('Veri işleme rızası vermeden devam edemezsiniz.');
       return;
     }
-    
+
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
+    } else if (currentStep === totalSteps) {
+      setCurrentStep(totalSteps + 1);
     } else {
-      // Final step - complete onboarding
       onComplete(data);
-      
-      // Navigate to mentee page after completion
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('showMenteePage'));
-      }, 1000);
+    }
+  };
+
+  const handleAccountCreate = async (accountData: { email: string; password: string }) => {
+    setAccountCreating(true);
+    try {
+      await signUp(accountData.email, accountData.password, {
+        role: 'mentee',
+        onboarding_data: data,
+        guest_session_id: guestSessionId,
+        kvkk_consent: data.consent,
+        marketing_consent: data.marketingConsent,
+      });
+
+      guestSession.saveAnswers({
+        answers: data,
+        currentStep: totalSteps + 1,
+        completed: true,
+      });
+
+      onComplete(data);
+      guestSession.clearSession();
+    } catch (error: any) {
+      if (error.message?.includes('already registered')) {
+        alert('Bu e-posta adresi zaten kayıtlı. Giriş yaparak devam edebilirsiniz.');
+        if (onShowLogin) {
+          onShowLogin();
+        }
+      } else {
+        alert('Hesap oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
+      }
+      setAccountCreating(false);
     }
   };
 
@@ -81,8 +138,9 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
       case 1: return data.category !== '';
       case 2: return data.goalLevel !== '';
       case 3: return data.budget !== '' && data.timeAvailability !== '';
-      case 4: return true; // Optional step
-      case 5: return data.consent; // KVKK consent required
+      case 4: return true;
+      case 5: return data.consent;
+      case 6: return false;
       default: return false;
     }
   };
@@ -553,17 +611,30 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
     </div>
   );
 
+  const renderStep6 = () => (
+    <div className="animate-fade-in">
+      <AccountCreateStep
+        onComplete={handleAccountCreate}
+        onShowLogin={() => {
+          if (onShowLogin) onShowLogin();
+        }}
+        loading={accountCreating}
+      />
+    </div>
+  );
+
   const renderCurrentStep = () => {
-    if (currentStep === 6) {
+    if (currentStep === totalSteps + 1) {
       return renderFinalStep();
     }
-    
+
     switch (currentStep) {
       case 1: return renderStep1();
       case 2: return renderStep2();
       case 3: return renderStep3();
       case 4: return renderStep4();
       case 5: return renderStep5();
+      case 6: return renderStep6();
       default: return null;
     }
   };
@@ -584,7 +655,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
         </div>
 
         {/* Progress Bar */}
-        {currentStep <= totalSteps + 1 && renderProgressBar()}
+        {currentStep <= totalSteps && renderProgressBar()}
 
         {/* Main Content */}
         <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 mb-8 min-h-[600px] flex flex-col justify-center">
@@ -611,16 +682,18 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
               </button>
             )}
 
-            <button
-              onClick={handleNext}
-              disabled={currentStep <= totalSteps && !isStepValid() && currentStep !== 4}
-              className="flex items-center space-x-2 px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              <span>
-                {currentStep === 6 ? 'Mentor Önerilerini Gör' : 'Devam Et'}
-              </span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
+            {currentStep !== 6 && (
+              <button
+                onClick={handleNext}
+                disabled={(currentStep <= totalSteps && !isStepValid() && currentStep !== 4) || accountCreating}
+                className="flex items-center space-x-2 px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                <span>
+                  {currentStep === totalSteps + 1 ? 'Mentor Önerilerini Gör' : 'Devam Et'}
+                </span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
       </div>

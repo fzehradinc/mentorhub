@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Layout from '../components/Layout/Layout';
 import OnboardingFlow from '../components/OnboardingFlow/OnboardingFlow';
+import { useAuth } from '../contexts/AuthContext';
 
 interface OnboardingData {
   category: string;
@@ -21,18 +22,32 @@ interface OnboardingPageProps {
  * Handles the complete progressive onboarding flow
  */
 const OnboardingPage: React.FC<OnboardingPageProps> = ({ onBack }) => {
+  const { user } = useAuth();
   const [showFlow, setShowFlow] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleOnboardingComplete = (data: OnboardingData) => {
     console.log('Onboarding completed with data:', data);
-    
-    // Save onboarding data to localStorage or send to API
+
     localStorage.setItem('mentee_onboarding_data', JSON.stringify(data));
-    
-    // Show success message and redirect
-    alert('Onboarding tamamlandı! Mentor önerilerine yönlendiriliyorsunuz...');
-    onBack(); // This would typically navigate to mentor suggestions
+
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('onboardingSuccess'));
+      onBack();
+    }, 500);
   };
+
+  const handleShowLogin = () => {
+    setShowLoginModal(true);
+  };
+
+  React.useEffect(() => {
+    if (user?.role === 'mentee') {
+      setTimeout(() => {
+        onBack();
+      }, 1000);
+    }
+  }, [user, onBack]);
 
   const handleClose = () => {
     setShowFlow(false);
@@ -74,6 +89,7 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ onBack }) => {
     <OnboardingFlow
       onComplete={handleOnboardingComplete}
       onClose={handleClose}
+      onShowLogin={handleShowLogin}
     />
   );
 };

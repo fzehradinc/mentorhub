@@ -11,6 +11,7 @@ interface AuthContextType {
     password: string;
     role: 'mentor' | 'mentee';
   }) => Promise<boolean>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<boolean>;
   isLoading: boolean;
   error: string | null;
 }
@@ -111,18 +112,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      // Mock registration - in real app, this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      
-      // Basic validation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       if (userData.password.length < 6) {
         setError('Şifre en az 6 karakter olmalıdır');
         setIsLoading(false);
         return false;
       }
-      
+
       const newUser: User = {
         id: Date.now().toString(),
         name: userData.name,
@@ -131,7 +130,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         createdAt: new Date().toISOString(),
         avatar: `https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400`
       };
-      
+
       setUser(newUser);
       localStorage.setItem('user', JSON.stringify(newUser));
       setIsLoading(false);
@@ -140,6 +139,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError('Kayıt olurken bir hata oluştu');
       setIsLoading(false);
       return false;
+    }
+  };
+
+  const signUp = async (email: string, password: string, metadata?: any): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      if (password.length < 8) {
+        setError('Şifre en az 8 karakter olmalıdır');
+        setIsLoading(false);
+        return false;
+      }
+
+      const existingUsers = ['alex@example.com', 'sarah@example.com', 'elif@example.com'];
+      if (existingUsers.includes(email)) {
+        throw new Error('User already registered');
+      }
+
+      const newUser: User = {
+        id: `user_${Date.now()}`,
+        name: email.split('@')[0],
+        email: email,
+        role: metadata?.role || 'mentee',
+        createdAt: new Date().toISOString(),
+        avatar: `https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400`
+      };
+
+      setUser(newUser);
+      localStorage.setItem('user', JSON.stringify(newUser));
+
+      if (metadata?.guest_session_id) {
+        localStorage.removeItem('beementor_guest_session_id');
+        localStorage.removeItem('beementor_onboarding_guest');
+      }
+
+      setIsLoading(false);
+      return true;
+    } catch (err: any) {
+      if (err.message?.includes('already registered')) {
+        setError('Bu e-posta adresi zaten kayıtlı');
+      } else {
+        setError('Kayıt olurken bir hata oluştu');
+      }
+      setIsLoading(false);
+      throw err;
     }
   };
 
@@ -156,6 +203,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     register,
+    signUp,
     isLoading,
     error
   };

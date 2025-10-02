@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Search, Filter, Heart, Sparkles } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Filter, Heart, Sparkles, CheckCircle } from 'lucide-react';
 import Layout from '../components/Layout/Layout';
 import HeroBanner from '../components/HeroBanner';
 import MentorCard from '../components/MentorCard/MentorCard';
@@ -26,10 +26,10 @@ interface HomePageProps {
  * - onShowMessages: Function to show messages page
  * - onShowOnboarding: Function to show onboarding page
  */
-const HomePage: React.FC<HomePageProps> = ({ 
-  onViewProfile, 
-  onShowAuth, 
-  onShowAppointments, 
+const HomePage: React.FC<HomePageProps> = ({
+  onViewProfile,
+  onShowAuth,
+  onShowAppointments,
   onShowMessages,
   onShowOnboarding
 }) => {
@@ -37,6 +37,7 @@ const HomePage: React.FC<HomePageProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>('all');
+  const [showWelcomeToast, setShowWelcomeToast] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     expertiseAreas: [],
     languages: [],
@@ -219,8 +220,51 @@ const HomePage: React.FC<HomePageProps> = ({
 
   const isMentee = user?.role === 'mentee';
 
+  useEffect(() => {
+    const handleOnboardingSuccess = () => {
+      setShowWelcomeToast(true);
+      setTimeout(() => {
+        setShowWelcomeToast(false);
+      }, 6000);
+    };
+
+    window.addEventListener('onboardingSuccess', handleOnboardingSuccess);
+    return () => window.removeEventListener('onboardingSuccess', handleOnboardingSuccess);
+  }, []);
+
   return (
     <Layout onShowAuth={onShowAuth} onShowAppointments={onShowAppointments} onShowMessages={onShowMessages}>
+      {/* Welcome Toast */}
+      {showWelcomeToast && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div className="bg-white rounded-lg shadow-xl border-2 border-green-500 p-4 max-w-md">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  Hoş geldin! 🎉
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Profilini tamamlayabilir veya hemen mentörlerine göz atabilirsin.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowWelcomeToast(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <span className="sr-only">Kapat</span>
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* HeroBanner: Hidden for mentees, shown for mentors and anonymous users */}
       {!isMentee && <HeroBanner />}
 
