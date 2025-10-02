@@ -42,6 +42,11 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onComplete, onClose }) 
     } else {
       // Final step - complete onboarding
       onComplete(data);
+      
+      // Navigate to mentee page after completion
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('showMenteePage'));
+      }, 1000);
     }
   };
 
