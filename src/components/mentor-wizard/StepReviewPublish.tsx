@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { CheckCircle, AlertTriangle, Eye, Globe, Shield, ExternalLink } from 'lucide-react';
-import FormField from './FormField';
 
 interface MentorProfile {
   display_name: string;
@@ -269,46 +268,40 @@ const StepReviewPublish: React.FC<StepReviewPublishProps> = ({
       </div>
 
       {/* Terms and Conditions */}
-      <FormField
-        label="Son Adım"
-        required
-        error={!termsAccepted ? 'Kullanım koşullarını kabul etmelisiniz' : ''}
-      >
-        <div className="space-y-4">
-          <label className="flex items-start space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={termsAccepted}
-              onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1"
-            />
-            <div>
-              <span className="font-medium text-gray-900">
-                Topluluk kuralları ve gizlilik politikasını kabul ediyorum
-              </span>
-              <p className="text-sm text-gray-600 mt-1">
-                Mentor olarak platform kurallarına uyacağımı ve mentee'lere kaliteli hizmet vereceğimi taahhüt ediyorum.
-              </p>
-              <div className="flex items-center space-x-4 mt-2">
-                <a
-                  href="#"
-                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center space-x-1"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  <span>Topluluk Kuralları</span>
-                </a>
-                <a
-                  href="#"
-                  className="text-sm text-blue-600 hover:text-blue-700 flex items-center space-x-1"
-                >
-                  <Shield className="w-3 h-3" />
-                  <span>Gizlilik Politikası</span>
-                </a>
-              </div>
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+        <label className="flex items-start space-x-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
+            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-1"
+          />
+          <div>
+            <span className="font-medium text-gray-900">
+              Topluluk kuralları ve gizlilik politikasını kabul ediyorum
+            </span>
+            <p className="text-sm text-gray-600 mt-1">
+              Mentor olarak platform kurallarına uyacağımı ve mentee'lere kaliteli hizmet vereceğimi taahhüt ediyorum.
+            </p>
+            <div className="flex items-center space-x-4 mt-2">
+              <a
+                href="#"
+                className="text-sm text-blue-600 hover:text-blue-700 flex items-center space-x-1"
+              >
+                <ExternalLink className="w-3 h-3" />
+                <span>Topluluk Kuralları</span>
+              </a>
+              <a
+                href="#"
+                className="text-sm text-blue-600 hover:text-blue-700 flex items-center space-x-1"
+              >
+                <Shield className="w-3 h-3" />
+                <span>Gizlilik Politikası</span>
+              </a>
             </div>
-          </label>
-        </div>
-      </FormField>
+          </div>
+        </label>
+      </div>
 
       {/* Publish Actions */}
       <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6">

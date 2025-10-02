@@ -47,6 +47,14 @@ export interface Mentor extends User {
   isAvailable: boolean;
 }
 
+export interface TimeSlot {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+}
+
 export interface Appointment {
   id: string;
   mentorId: string;

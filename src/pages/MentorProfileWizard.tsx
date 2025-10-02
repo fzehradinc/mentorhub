@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import WizardLayout from '../components/mentor-wizard/WizardLayout';
 import StepBasics from '../components/mentor-wizard/StepBasics';
 import StepExpertise from '../components/mentor-wizard/StepExpertise';
