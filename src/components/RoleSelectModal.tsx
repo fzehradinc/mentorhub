@@ -69,8 +69,10 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
         window.dispatchEvent(new CustomEvent('showOnboarding'));
       }, 300);
     } else {
-      // For mentors, could navigate to mentor onboarding
-      console.log(`Selected role: ${role}, href: ${href}`);
+      // For mentors, trigger mentor profile wizard
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('showMentorWizard'));
+      }, 300);
     }
   };
 

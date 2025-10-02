@@ -7,8 +7,9 @@ import AppointmentsPage from './pages/AppointmentsPage';
 import MessagesPage from './pages/MessagesPage';
 import OnboardingPage from './pages/OnboardingPage';
 import MenteePage from './pages/MenteePage';
+import MentorProfileWizard from './pages/MentorProfileWizard';
 
-type AppView = 'home' | 'mentor-detail' | 'auth' | 'appointments' | 'messages' | 'onboarding' | 'mentee-page';
+type AppView = 'home' | 'mentor-detail' | 'auth' | 'appointments' | 'messages' | 'onboarding' | 'mentee-page' | 'mentor-wizard';
 
 const AppContent: React.FC = () => {
   const { user } = useAuth();
@@ -24,13 +25,19 @@ const AppContent: React.FC = () => {
     const handleShowMenteePage = () => {
       setCurrentView('mentee-page');
     };
+    
+    const handleShowMentorWizard = () => {
+      setCurrentView('mentor-wizard');
+    };
 
     window.addEventListener('showOnboarding', handleShowOnboarding);
     window.addEventListener('showMenteePage', handleShowMenteePage);
+    window.addEventListener('showMentorWizard', handleShowMentorWizard);
     
     return () => {
       window.removeEventListener('showOnboarding', handleShowOnboarding);
       window.removeEventListener('showMenteePage', handleShowMenteePage);
+      window.removeEventListener('showMentorWizard', handleShowMentorWizard);
     };
   }, []);
 
@@ -67,6 +74,10 @@ const AppContent: React.FC = () => {
   const handleShowMenteePage = () => {
     setCurrentView('mentee-page');
   };
+  
+  const handleShowMentorWizard = () => {
+    setCurrentView('mentor-wizard');
+  };
 
   switch (currentView) {
     case 'mentor-detail':
@@ -86,6 +97,8 @@ const AppContent: React.FC = () => {
       return <OnboardingPage onBack={handleBackToHome} />;
     case 'mentee-page':
       return <MenteePage onBack={handleBackToHome} />;
+    case 'mentor-wizard':
+      return <MentorProfileWizard onBack={handleBackToHome} />;
     default:
       return (
         <HomePage 
