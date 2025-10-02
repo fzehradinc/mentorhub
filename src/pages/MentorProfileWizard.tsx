@@ -6,6 +6,7 @@ import StepAvailability from '../components/mentor-wizard/StepAvailability';
 import StepPricing from '../components/mentor-wizard/StepPricing';
 import StepMediaBio from '../components/mentor-wizard/StepMediaBio';
 import StepReviewPublish from '../components/mentor-wizard/StepReviewPublish';
+import StepVerification from '../components/mentor-wizard/StepVerification';
 import { useAutosave } from '../hooks/useAutosave';
 
 interface TimeSlot {
@@ -50,7 +51,12 @@ interface MentorProfileData {
   discount_note: string;
   packages: PricingPackage[];
   
-  // Step 5: Media/Bio
+  // Step 5: Verification
+  badges: string[];
+  company_verification: any;
+  kyc_upload: any;
+  
+  // Step 6: Media/Bio
   avatar_upload: string;
   cover_upload: string;
   video_intro_url: string;
@@ -99,13 +105,18 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
     packages: [],
     
     // Step 5
+    badges: [],
+    company_verification: null,
+    kyc_upload: null,
+    
+    // Step 6
     avatar_upload: '',
     cover_upload: '',
     video_intro_url: '',
     long_bio: ''
   });
 
-  const totalSteps = 6;
+  const totalSteps = 7;
 
   // Autosave hook
   const { saveNow } = useAutosave(profileData, {
@@ -317,7 +328,19 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
             errors={errors}
           />
         );
-      case 4:
+      case 6:
+        return (
+          <StepVerification
+            data={{
+              badges: profileData.badges,
+              company_verification: profileData.company_verification,
+              kyc_upload: profileData.kyc_upload
+            }}
+            onChange={updateProfileData}
+            errors={errors}
+          />
+        );
+      case 5:
         return (
           <StepMediaBio
             data={{
@@ -330,7 +353,7 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
             errors={errors}
           />
         );
-      case 5:
+      case 7:
         return (
           <StepReviewPublish
             data={profileData}
