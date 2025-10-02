@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, Camera, Image, Video, CheckCircle, AlertTriangle, RotateCcw } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 interface MediaUploadModalProps {
   isOpen: boolean;
@@ -79,7 +80,7 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const validateFile = (file: File): string | null => {
+  const validateFile = async (file: File): Promise<string | null> => {
     // File size check
     if (file.size > config.maxSize) {
       return `Dosya çok büyük. Maksimum boyut: ${formatFileSize(config.maxSize)}`;
@@ -87,23 +88,62 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
 
     // File type check
     if (!config.accept.split(',').includes(file.type)) {
-      return `Desteklenmeyen format. İzin verilen: ${config.accept}`;
+      return `Desteklenmeyen format. İzin verilen: ${config.accept.replace(/image\/|video\//g, '').toUpperCase()}`;
     }
 
-    // Video duration check (would need actual video analysis)
-    if (mediaType === 'video') {
-      // This would be implemented with video metadata reading
-      // For now, just a placeholder
+    // Image dimension validation
+    if (mediaType === 'avatar' || mediaType === 'cover') {
+      try {
+        const dimensions = await getImageDimensions(file);
+        const minWidth = mediaType === 'avatar' ? 400 : 1280;
+        const minHeight = mediaType === 'avatar' ? 400 : 720;
+
+        if (dimensions.width < minWidth || dimensions.height < minHeight) {
+          return `Görsel çok küçük. Minimum boyut: ${minWidth}×${minHeight}px`;
+        }
+
+        // Check aspect ratio for avatar (should be roughly square)
+        if (mediaType === 'avatar') {
+          const ratio = dimensions.width / dimensions.height;
+          if (ratio < 0.8 || ratio > 1.2) {
+            return 'Avatar için kare format (1:1) gerekli';
+          }
+        }
+
+        // Check aspect ratio for cover (should be roughly 16:9)
+        if (mediaType === 'cover') {
+          const ratio = dimensions.width / dimensions.height;
+          const targetRatio = 16 / 9;
+          if (ratio < targetRatio - 0.3 || ratio > targetRatio + 0.3) {
+            return 'Kapak için 16:9 format önerilir';
+          }
+        }
+      } catch (err) {
+        return 'Görsel dosyası okunamadı';
+      }
     }
 
     return null;
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        resolve({ width: img.width, height: img.height });
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const validationError = validateFile(file);
+    setError(null);
+
+    const validationError = await validateFile(file);
     if (validationError) {
       setError(validationError);
       return;
@@ -125,70 +165,73 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
     setError(null);
 
     try {
-      // Step 1: Get presigned URL
-      const urlResponse = await fetch(`/api/mentors/${mentorId}/media/${mediaType}-upload-url`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          content_type: selectedFile.type,
-          file_size: selectedFile.size
-        })
-      });
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-      if (!urlResponse.ok) {
-        throw new Error('Upload URL alınamadı');
+      if (userError || !user) {
+        throw new Error('Oturum açmanız gerekiyor');
       }
 
-      const { upload_url, upload_id } = await urlResponse.json();
+      // Determine bucket based on media type
+      const bucket = mediaType === 'avatar' ? 'mentor-avatars' : 'mentor-covers';
 
-      // Step 2: Upload file to storage
-      const uploadResponse = await fetch(upload_url, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': selectedFile.type
-        },
-        body: selectedFile
-      });
+      // Create unique filename
+      const fileExt = selectedFile.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-      if (!uploadResponse.ok) {
-        throw new Error('Dosya yükleme başarısız');
+      setProgress(20);
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(fileName, selectedFile, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Yükleme başarısız: ${uploadError.message}`);
       }
 
-      // Simulate progress
-      for (let i = 0; i <= 100; i += 10) {
-        setProgress(i);
-        await new Promise(resolve => setTimeout(resolve, 100));
+      setProgress(60);
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(fileName);
+
+      if (!urlData?.publicUrl) {
+        throw new Error('Dosya URL alınamadı');
       }
 
-      // Step 3: Commit URL to profile
-      const finalUrl = `https://cdn.mentorhub.com/${mediaType}s/${mentorId}.webp`;
-      const commitResponse = await fetch(`/api/mentors/${mentorId}/media/commit`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          [`${mediaType}_url`]: finalUrl
-        })
-      });
+      setProgress(100);
 
-      if (!commitResponse.ok) {
-        throw new Error('URL kaydedilemedi');
-      }
+      // Success - wait a moment to show completion
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Success
-      onUploadComplete(finalUrl);
+      onUploadComplete(urlData.publicUrl);
       onClose();
-      
+
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Yükleme hatası');
+      console.error('Upload error:', err);
+      let errorMessage = 'Yükleme hatası';
+
+      if (err instanceof Error) {
+        if (err.message.includes('network') || err.message.includes('fetch')) {
+          errorMessage = 'İnternet bağlantınızı kontrol edin';
+        } else if (err.message.includes('size') || err.message.includes('large')) {
+          errorMessage = 'Dosya çok büyük. Lütfen daha küçük bir dosya seçin';
+        } else if (err.message.includes('type') || err.message.includes('format')) {
+          errorMessage = 'Desteklenmeyen dosya formatı';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+
+      setError(errorMessage);
     } finally {
       setUploading(false);
-      setProgress(0);
     }
   };
 
@@ -352,24 +395,51 @@ const MediaUploadModal: React.FC<MediaUploadModalProps> = ({
           {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-center space-x-3">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-                <div>
-                  <h4 className="font-medium text-red-900">Yükleme Başarısız</h4>
-                  <p className="text-sm text-red-700">{error}</p>
+              <div className="flex items-start justify-between">
+                <div className="flex items-start space-x-3">
+                  <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-red-900">Yükleme Başarısız</h4>
+                    <p className="text-sm text-red-700 mt-1">{error}</p>
+                  </div>
                 </div>
+                {selectedFile && (
+                  <button
+                    onClick={handleUpload}
+                    disabled={uploading}
+                    className="flex items-center space-x-1 px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Tekrar Dene</span>
+                  </button>
+                )}
               </div>
             </div>
           )}
 
           {/* Success Message */}
-          {!uploading && selectedFile && !error && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          {progress === 100 && !error && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 animate-fadeIn">
               <div className="flex items-center space-x-3">
                 <CheckCircle className="w-5 h-5 text-green-600" />
                 <div>
-                  <h4 className="font-medium text-green-900">Dosya Hazır</h4>
+                  <h4 className="font-medium text-green-900">Yükleme Başarılı</h4>
                   <p className="text-sm text-green-700">
+                    Dosyanız başarıyla yüklendi
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Ready to Upload */}
+          {!uploading && selectedFile && !error && progress === 0 && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <CheckCircle className="w-5 h-5 text-blue-600" />
+                <div>
+                  <h4 className="font-medium text-blue-900">Dosya Hazır</h4>
+                  <p className="text-sm text-blue-700">
                     {selectedFile.name} yüklenmeye hazır
                   </p>
                 </div>
