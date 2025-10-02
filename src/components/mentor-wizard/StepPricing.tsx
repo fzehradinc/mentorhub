@@ -1,5 +1,5 @@
-import React from 'react';
-import { DollarSign, Gift, Package } from 'lucide-react';
+import React, { useState } from 'react';
+import { DollarSign, Gift, Package, Info, Check, X, Sparkles } from 'lucide-react';
 import FormField from './FormField';
 
 interface PricingPackage {
@@ -12,6 +12,8 @@ interface PricingPackage {
 interface MentorPricing {
   price_per_session: number;
   first_session_discount: boolean;
+  first_session_discount_type: 'percentage' | 'fixed';
+  first_session_discount_value: number;
   discount_note: string;
   packages: PricingPackage[];
 }
@@ -23,9 +25,11 @@ interface StepPricingProps {
 }
 
 /**
- * Step 4: Pricing and discount options
+ * Step 4: Pricing with visual discount system
  */
 const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => {
+  const [showPackageWarning, setShowPackageWarning] = useState(false);
+
   const priceRanges = [
     { min: 100, max: 300, label: 'Başlangıç', desc: '100-300₺' },
     { min: 300, max: 600, label: 'Orta Seviye', desc: '300-600₺' },
@@ -33,33 +37,100 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
     { min: 1000, max: 5000, label: 'Premium', desc: '1000₺+' }
   ];
 
-  const packageTemplates = [
-    { name: '3 Seans Paketi', sessions: 3, discount: 10 },
-    { name: '5 Seans Paketi', sessions: 5, discount: 15 },
-    { name: '10 Seans Paketi', sessions: 10, discount: 20 }
-  ];
-
-  const handleAddPackage = (template: typeof packageTemplates[0]) => {
-    const newPackage: PricingPackage = {
-      id: Date.now().toString(),
-      name: template.name,
-      sessions: template.sessions,
-      discount: template.discount
-    };
-    
-    if (data.packages.length < 2) {
-      onChange('packages', [...data.packages, newPackage]);
-    }
+  const discountOptions = {
+    percentage: [
+      { value: 10, label: '%10' },
+      { value: 20, label: '%20' },
+      { value: 30, label: '%30' },
+      { value: 50, label: '%50' }
+    ],
+    fixed: [
+      { value: 99, label: '99₺' },
+      { value: 149, label: '149₺' },
+      { value: 199, label: '199₺' },
+      { value: 249, label: '249₺' }
+    ]
   };
 
-  const handleRemovePackage = (packageId: string) => {
-    onChange('packages', data.packages.filter(pkg => pkg.id !== packageId));
+  const packageTemplates = [
+    {
+      name: '3 Seans Paketi',
+      sessions: 3,
+      discount: 10,
+      icon: '📦',
+      desc: 'Kısa dönem hedefler için'
+    },
+    {
+      name: '5 Seans Paketi',
+      sessions: 5,
+      discount: 15,
+      icon: '📦📦',
+      desc: 'En popüler seçenek'
+    },
+    {
+      name: '10 Seans Paketi',
+      sessions: 10,
+      discount: 20,
+      icon: '📦📦📦',
+      desc: 'Uzun vadeli gelişim'
+    }
+  ];
+
+  const calculateFirstSessionPrice = () => {
+    if (!data.first_session_discount || data.price_per_session === 0) {
+      return data.price_per_session;
+    }
+
+    if (data.first_session_discount_type === 'fixed') {
+      return data.first_session_discount_value;
+    } else {
+      const discount = (data.price_per_session * data.first_session_discount_value) / 100;
+      return Math.round(data.price_per_session - discount);
+    }
   };
 
   const calculatePackagePrice = (pkg: PricingPackage) => {
     const totalPrice = data.price_per_session * pkg.sessions;
-    const discountAmount = totalPrice * (pkg.discount / 100);
-    return totalPrice - discountAmount;
+    const discountAmount = (totalPrice * pkg.discount) / 100;
+    return Math.round(totalPrice - discountAmount);
+  };
+
+  const isPackageSelected = (sessions: number) => {
+    return data.packages.some(pkg => pkg.sessions === sessions);
+  };
+
+  const handlePackageToggle = (template: typeof packageTemplates[0]) => {
+    const existingPackage = data.packages.find(pkg => pkg.sessions === template.sessions);
+
+    if (existingPackage) {
+      // Remove package
+      onChange('packages', data.packages.filter(pkg => pkg.id !== existingPackage.id));
+      setShowPackageWarning(false);
+    } else {
+      // Add package
+      if (data.packages.length >= 2) {
+        setShowPackageWarning(true);
+        setTimeout(() => setShowPackageWarning(false), 3000);
+        return;
+      }
+
+      const newPackage: PricingPackage = {
+        id: Date.now().toString(),
+        name: template.name,
+        sessions: template.sessions,
+        discount: template.discount
+      };
+
+      onChange('packages', [...data.packages, newPackage]);
+    }
+  };
+
+  const handleDiscountToggle = (checked: boolean) => {
+    onChange('first_session_discount', checked);
+    if (checked && !data.first_session_discount_value) {
+      onChange('first_session_discount_type', 'percentage');
+      onChange('first_session_discount_value', 20);
+    }
   };
 
   return (
@@ -73,7 +144,7 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
           Ücret & İndirim
         </h2>
         <p className="text-gray-600">
-          Mentörlük hizmetinizin fiyatlandırmasını belirleyin
+          Fiyatlandırmanızı sistemden seçerek kolayca belirleyin
         </p>
       </div>
 
@@ -87,7 +158,7 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
         <div className="space-y-4">
           {/* Price Input */}
           <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-lg">
               ₺
             </span>
             <input
@@ -97,7 +168,7 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
               placeholder="500"
               min={100}
               max={5000}
-              className={`w-full pl-8 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-right ${
+              className={`w-full pl-10 pr-4 py-4 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-xl font-semibold ${
                 errors.price_per_session ? 'border-red-300' : 'border-gray-300'
               }`}
             />
@@ -105,17 +176,21 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
 
           {/* Price Range Suggestions */}
           <div>
-            <p className="text-sm font-medium text-gray-700 mb-3">Önerilen fiyat aralıkları:</p>
+            <p className="text-sm font-medium text-gray-700 mb-3">Hızlı seçim:</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {priceRanges.map((range) => (
                 <button
                   key={range.label}
                   type="button"
                   onClick={() => onChange('price_per_session', range.min)}
-                  className="p-3 border border-gray-200 rounded-lg hover:border-emerald-300 hover:bg-emerald-50 transition-colors text-center"
+                  className={`p-3 border-2 rounded-lg transition-all text-center hover:scale-105 ${
+                    data.price_per_session >= range.min && data.price_per_session < range.max
+                      ? 'border-emerald-500 bg-emerald-50 shadow-md'
+                      : 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50'
+                  }`}
                 >
-                  <div className="font-medium text-gray-900">{range.label}</div>
-                  <div className="text-sm text-gray-600">{range.desc}</div>
+                  <div className="font-semibold text-gray-900">{range.label}</div>
+                  <div className="text-xs text-gray-600">{range.desc}</div>
                 </button>
               ))}
             </div>
@@ -126,120 +201,274 @@ const StepPricing: React.FC<StepPricingProps> = ({ data, onChange, errors }) => 
       {/* First Session Discount */}
       <FormField
         label="İlk Seans İndirimi"
-        helper="Yeni mentee'leri çekmek için ilk seans indirimi sunabilirsiniz"
+        helper={
+          <div className="flex items-center space-x-1">
+            <span>Yeni mentee kazanımını %35 artırır</span>
+            <Info className="w-3 h-3 text-gray-500" />
+          </div>
+        }
       >
         <div className="space-y-4">
-          <label className="flex items-center space-x-3 cursor-pointer">
+          <label className="flex items-start space-x-3 cursor-pointer p-4 border-2 border-gray-200 rounded-xl hover:border-blue-300 transition-colors">
             <input
               type="checkbox"
               checked={data.first_session_discount}
-              onChange={(e) => onChange('first_session_discount', e.target.checked)}
-              className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+              onChange={(e) => handleDiscountToggle(e.target.checked)}
+              className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
             />
-            <div>
-              <span className="font-medium text-gray-900">İlk seans indirimi sunmak istiyorum</span>
-              <p className="text-sm text-gray-600">Yeni mentee'ler için özel fiyat</p>
+            <div className="flex-1">
+              <div className="flex items-center space-x-2">
+                <span className="font-semibold text-gray-900">İlk seans indirimi sunmak istiyorum</span>
+                {data.first_session_discount && (
+                  <span className="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                    <Check className="w-3 h-3 mr-1" />
+                    Aktif
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-gray-600 mt-1">Yeni mentee'ler için özel fiyat</p>
             </div>
           </label>
 
           {data.first_session_discount && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-              <FormField
-                label="İndirim Açıklaması"
-                helper="Örn: 'İlk seans %50 indirimli' veya 'İlk seans 99₺'"
-              >
-                <input
-                  type="text"
-                  value={data.discount_note}
-                  onChange={(e) => onChange('discount_note', e.target.value)}
-                  placeholder="İlk seans %50 indirimli"
-                  maxLength={50}
-                  className="w-full px-4 py-2 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                />
-              </FormField>
-            </div>
-          )}
-        </div>
-      </FormField>
+            <div className="bg-gradient-to-br from-blue-50 to-green-50 border-2 border-blue-200 rounded-xl p-6 space-y-4 animate-fadeIn">
+              {/* Discount Type Selection */}
+              <div className="flex items-center space-x-2 text-sm">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange('first_session_discount_type', 'percentage');
+                    onChange('first_session_discount_value', 20);
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    data.first_session_discount_type === 'percentage'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  Yüzde İndirim
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange('first_session_discount_type', 'fixed');
+                    onChange('first_session_discount_value', 149);
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    data.first_session_discount_type === 'fixed'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  Sabit Fiyat
+                </button>
+              </div>
 
-      {/* Packages */}
-      <FormField
-        label="Seans Paketleri"
-        helper="Mentee'lere paket seçenekleri sunabilirsiniz (maksimum 2 paket)"
-      >
-        <div className="space-y-4">
-          {/* Package Templates */}
-          {data.packages.length < 2 && (
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-3">Paket şablonları:</p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {packageTemplates.map((template) => (
+              {/* Discount Options */}
+              <div className="grid grid-cols-4 gap-3">
+                {(data.first_session_discount_type === 'percentage'
+                  ? discountOptions.percentage
+                  : discountOptions.fixed
+                ).map((option) => (
                   <button
-                    key={template.name}
+                    key={option.value}
                     type="button"
-                    onClick={() => handleAddPackage(template)}
-                    className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-center"
+                    onClick={() => onChange('first_session_discount_value', option.value)}
+                    className={`p-3 border-2 rounded-lg font-semibold transition-all hover:scale-105 ${
+                      data.first_session_discount_value === option.value
+                        ? 'border-green-500 bg-green-50 text-green-700 shadow-md'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-green-300'
+                    }`}
                   >
-                    <Package className="w-5 h-5 mx-auto mb-2 text-gray-600" />
-                    <div className="font-medium text-gray-900">{template.name}</div>
-                    <div className="text-sm text-gray-600">%{template.discount} indirim</div>
+                    {option.label}
                   </button>
                 ))}
               </div>
-            </div>
-          )}
 
-          {/* Active Packages */}
-          {data.packages.length > 0 && (
-            <div className="space-y-3">
-              <h4 className="font-medium text-gray-900">Aktif paketler:</h4>
-              {data.packages.map((pkg) => (
-                <div
-                  key={pkg.id}
-                  className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg"
-                >
-                  <div>
-                    <h5 className="font-medium text-blue-900">{pkg.name}</h5>
-                    <p className="text-sm text-blue-700">
-                      {pkg.sessions} seans • %{pkg.discount} indirim
-                    </p>
-                    {data.price_per_session > 0 && (
-                      <p className="text-sm text-blue-600">
-                        <span className="line-through">{data.price_per_session * pkg.sessions}₺</span>
-                        {' → '}
-                        <span className="font-semibold">{calculatePackagePrice(pkg)}₺</span>
-                      </p>
-                    )}
+              {/* Visual Price Display */}
+              {data.price_per_session > 0 && (
+                <div className="bg-white rounded-lg p-4 border-2 border-green-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">İlk seans fiyatı:</span>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-lg text-gray-400 line-through">
+                        {data.price_per_session}₺
+                      </span>
+                      <span className="text-2xl font-bold text-green-600 animate-slideIn">
+                        {calculateFirstSessionPrice()}₺
+                      </span>
+                    </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemovePackage(pkg.id)}
-                    className="text-red-500 hover:text-red-700 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
                 </div>
-              ))}
+              )}
+
+              {/* Motivational Message */}
+              <div className="flex items-start space-x-2 text-sm text-blue-800">
+                <Sparkles className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>İlk seans indirimi ekleyerek yeni mentee kazanımını kolaylaştırdın!</span>
+              </div>
             </div>
           )}
         </div>
       </FormField>
 
-      {/* Pricing Summary */}
-      {data.price_per_session > 0 && (
-        <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl p-6">
+      {/* Session Packages */}
+      <FormField
+        label="Seans Paketleri"
+        helper={
+          <div className="flex items-center space-x-1">
+            <span>Paketler mentor gelirini öngörülebilir hale getirir (maksimum 2 paket)</span>
+            <Info className="w-3 h-3 text-gray-500" />
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          {/* Package Warning */}
+          {showPackageWarning && (
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-3 animate-shake">
+              <p className="text-sm text-amber-800 font-medium">
+                En fazla 2 paket seçebilirsiniz
+              </p>
+            </div>
+          )}
+
+          {/* Package Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {packageTemplates.map((template) => {
+              const isSelected = isPackageSelected(template.sessions);
+              const packagePrice = data.price_per_session > 0
+                ? calculatePackagePrice(template)
+                : 0;
+              const originalPrice = data.price_per_session * template.sessions;
+
+              return (
+                <button
+                  key={template.sessions}
+                  type="button"
+                  onClick={() => handlePackageToggle(template)}
+                  className={`p-5 border-2 rounded-xl transition-all hover:scale-105 text-left relative ${
+                    isSelected
+                      ? 'border-blue-500 bg-blue-50 shadow-lg'
+                      : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                  }`}
+                >
+                  {/* Check Badge */}
+                  {isSelected && (
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shadow-md">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+
+                  {/* Icon */}
+                  <div className="text-3xl mb-2">{template.icon}</div>
+
+                  {/* Title */}
+                  <h3 className="font-bold text-gray-900 mb-1">
+                    {template.name}
+                  </h3>
+
+                  {/* Description */}
+                  <p className="text-xs text-gray-600 mb-3">{template.desc}</p>
+
+                  {/* Discount Badge */}
+                  <div className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full mb-3">
+                    %{template.discount} indirim
+                  </div>
+
+                  {/* Price Display */}
+                  {data.price_per_session > 0 && (
+                    <div className="space-y-1">
+                      <div className="text-sm text-gray-500 line-through">
+                        {originalPrice}₺
+                      </div>
+                      <div className="text-xl font-bold text-green-600">
+                        {packagePrice}₺
+                      </div>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Info Message */}
+          {data.packages.length === 0 && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+              <p className="text-sm text-gray-600">
+                <Info className="w-4 h-4 inline mr-1" />
+                Paket seçimi opsiyoneldir. Daha fazla seçenek sunarak görünürlüğünü artırabilirsin.
+              </p>
+            </div>
+          )}
+        </div>
+      </FormField>
+
+      {/* Dynamic Pricing Summary */}
+      {data.price_per_session >= 100 && (
+        <div className="bg-gradient-to-br from-emerald-50 via-blue-50 to-green-50 rounded-xl p-6 border-2 border-emerald-200 shadow-sm animate-fadeIn">
           <div className="flex items-start space-x-3">
-            <Gift className="w-6 h-6 text-emerald-600 mt-1" />
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Fiyatlandırma Özeti</h3>
-              <div className="space-y-1 text-sm text-gray-700">
-                <p><strong>Standart Seans:</strong> {data.price_per_session}₺</p>
+            <Gift className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center">
+                Fiyatlandırma Özeti
+                <span className="ml-2 text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full">
+                  Otomatik Hesaplama
+                </span>
+              </h3>
+
+              <div className="space-y-3">
+                {/* Standard Session */}
+                <div className="flex items-center justify-between p-3 bg-white rounded-lg">
+                  <span className="text-sm font-medium text-gray-700">Standart Seans Fiyatı</span>
+                  <span className="text-lg font-bold text-gray-900">{data.price_per_session}₺</span>
+                </div>
+
+                {/* First Session Discount */}
                 {data.first_session_discount && (
-                  <p><strong>İlk Seans:</strong> {data.discount_note}</p>
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div>
+                      <span className="text-sm font-medium text-green-900">İlk Seans</span>
+                      <span className="ml-2 text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded-full">
+                        {data.first_session_discount_type === 'percentage'
+                          ? `%${data.first_session_discount_value}`
+                          : `${data.first_session_discount_value}₺`}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-gray-500 line-through">
+                        {data.price_per_session}₺
+                      </div>
+                      <div className="text-lg font-bold text-green-600">
+                        {calculateFirstSessionPrice()}₺
+                      </div>
+                    </div>
+                  </div>
                 )}
-                {data.packages.length > 0 && (
-                  <p><strong>Paket Seçenekleri:</strong> {data.packages.length} adet</p>
-                )}
+
+                {/* Selected Packages */}
+                {data.packages.map((pkg) => {
+                  const packagePrice = calculatePackagePrice(pkg);
+                  const originalPrice = data.price_per_session * pkg.sessions;
+
+                  return (
+                    <div key={pkg.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div>
+                        <span className="text-sm font-medium text-blue-900">{pkg.name}</span>
+                        <span className="ml-2 text-xs bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full">
+                          %{pkg.discount} indirim
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-gray-500 line-through">
+                          {originalPrice}₺
+                        </div>
+                        <div className="text-lg font-bold text-blue-600">
+                          {packagePrice}₺
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

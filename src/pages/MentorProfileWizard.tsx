@@ -49,6 +49,8 @@ interface MentorProfileData {
   // Step 4: Pricing
   price_per_session: number;
   first_session_discount: boolean;
+  first_session_discount_type: 'percentage' | 'fixed';
+  first_session_discount_value: number;
   discount_note: string;
   packages: PricingPackage[];
   
@@ -113,6 +115,8 @@ const MentorProfileWizard: React.FC<MentorProfileWizardProps> = ({ onBack }) => 
     // Step 4
     price_per_session: 0,
     first_session_discount: false,
+    first_session_discount_type: 'percentage',
+    first_session_discount_value: 20,
     discount_note: '',
     packages: [],
     
