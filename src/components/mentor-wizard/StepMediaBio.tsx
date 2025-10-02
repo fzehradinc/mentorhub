@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Camera, Video, FileText, Upload, Eye } from 'lucide-react';
 import FormField from './FormField';
+import MediaUploadModal from './MediaUploadModal';
 
 interface MentorMediaBio {
   avatar_upload: string;
@@ -20,6 +21,10 @@ interface StepMediaBioProps {
  */
 const StepMediaBio: React.FC<StepMediaBioProps> = ({ data, onChange, errors }) => {
   const [bioPreview, setBioPreview] = useState(false);
+  const [uploadModal, setUploadModal] = useState<{
+    isOpen: boolean;
+    type: 'avatar' | 'cover' | 'video';
+  }>({ isOpen: false, type: 'avatar' });
 
   const bioTemplate = `• **Deneyim Özeti**
 8 yıldır [alan] alanında çalışıyorum. [Şirket/pozisyon] olarak [başarı/proje] gerçekleştirdim.
@@ -52,6 +57,15 @@ const StepMediaBio: React.FC<StepMediaBioProps> = ({ data, onChange, errors }) =
 
   const handleVideoUrlChange = (url: string) => {
     onChange('video_intro_url', url);
+  };
+
+  const handleUploadComplete = (url: string) => {
+    if (uploadModal.type === 'avatar') {
+      onChange('avatar_upload', url);
+    } else if (uploadModal.type === 'cover') {
+      onChange('cover_upload', url);
+    }
+    setUploadModal({ isOpen: false, type: 'avatar' });
   };
 
   return (
@@ -100,16 +114,14 @@ const StepMediaBio: React.FC<StepMediaBioProps> = ({ data, onChange, errors }) =
             )}
             
             <div className="flex-1">
-              <label className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors cursor-pointer min-h-[44px]">
+              <button
+                type="button"
+                onClick={() => setUploadModal({ isOpen: true, type: 'avatar' })}
+                className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors min-h-[44px] w-full"
+              >
                 <Upload className="w-4 h-4 mr-2" />
                 <span>{data.avatar_upload ? 'Fotoğrafı Değiştir' : 'Fotoğraf Yükle'}</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload('avatar_upload', e)}
-                  className="hidden"
-                />
-              </label>
+              </button>
             </div>
           </div>
         </div>
@@ -146,16 +158,14 @@ const StepMediaBio: React.FC<StepMediaBioProps> = ({ data, onChange, errors }) =
             </div>
           )}
           
-          <label className="flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors cursor-pointer min-h-[44px]">
+          <button
+            type="button"
+            onClick={() => setUploadModal({ isOpen: true, type: 'cover' })}
+            className="flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors min-h-[44px] w-full"
+          >
             <Upload className="w-4 h-4 mr-2" />
             <span>{data.cover_upload ? 'Kapak Fotoğrafını Değiştir' : 'Kapak Fotoğrafı Yükle'}</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleFileUpload('cover_upload', e)}
-              className="hidden"
-            />
-          </label>
+          </button>
         </div>
       </FormField>
 
@@ -267,6 +277,20 @@ const StepMediaBio: React.FC<StepMediaBioProps> = ({ data, onChange, errors }) =
           <li>• Samimi ama profesyonel bir ton kullanın</li>
         </ul>
       </div>
+
+      {/* Media Upload Modal */}
+      <MediaUploadModal
+        isOpen={uploadModal.isOpen}
+        onClose={() => setUploadModal({ isOpen: false, type: 'avatar' })}
+        mediaType={uploadModal.type}
+        currentUrl={
+          uploadModal.type === 'avatar' ? data.avatar_upload :
+          uploadModal.type === 'cover' ? data.cover_upload :
+          data.video_intro_url
+        }
+        onUploadComplete={handleUploadComplete}
+        mentorId="mock-mentor-id"
+      />
     </div>
   );
 };
