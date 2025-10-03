@@ -99,7 +99,7 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <div>
               <h2 id="role-select-title" className="text-2xl font-bold text-gray-900">
-                Kariyer hedeflerinize ulaşmanın zamanı
+                BiMentor'a Hoş Geldiniz
               </h2>
               <p className="text-gray-600 mt-1">
                 Size en uygun yolu seçin ve gelişim yolculuğunuza başlayın
@@ -121,19 +121,19 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               <RoleCard
                 icon={<User className="w-8 h-8" />}
-                title="Gelişim yolculuğunuza başlayın"
-                description="Deneyimli mentorlardan destek alın, hedeflerinize ulaşın."
-                ctaLabel="Mentee olarak başla"
+                title="Destek Alın"
+                description="Deneyimli mentorlarla hedeflerinize ulaşın."
+                ctaLabel="Mentee Olarak Başla"
                 href="/onboarding?role=mentee"
                 roleValue="mentee"
                 onClick={handleRoleSelect}
               />
-              
+
               <RoleCard
                 icon={<GraduationCap className="w-8 h-8" />}
-                title="Deneyiminizi paylaşın"
-                description="Bilgi ve tecrübenizle başkalarının gelişimine katkı sağlayın."
-                ctaLabel="Mentor olarak başla"
+                title="Rehberlik Edin"
+                description="Uzmanlığınızla başkalarının gelişimine katkı sağlayın."
+                ctaLabel="Mentor Olarak Başla"
                 href="/onboarding?role=mentor"
                 roleValue="mentor"
                 onClick={handleRoleSelect}
