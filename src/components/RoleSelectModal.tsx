@@ -99,10 +99,10 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <div>
               <h2 id="role-select-title" className="text-2xl font-bold text-gray-900">
-                Kariyerinde yeni bir adım atmaya hazır mısın? 🚀
+                Kariyer hedeflerinize ulaşmanın zamanı
               </h2>
               <p className="text-gray-600 mt-1">
-                Kendine uygun yolu seç ve ilham dolu topluluğa katıl
+                Size en uygun yolu seçin ve gelişim yolculuğunuza başlayın
               </p>
             </div>
             <button
@@ -121,9 +121,9 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               <RoleCard
                 icon={<User className="w-8 h-8" />}
-                title="Hayallerine doğru ilk adımı at"
-                description="Doğru mentörü bul, hedeflerini büyüt, yolculuğuna güç kat."
-                ctaLabel="Mentee olarak devam et"
+                title="Gelişim yolculuğunuza başlayın"
+                description="Deneyimli mentorlardan destek alın, hedeflerinize ulaşın."
+                ctaLabel="Mentee olarak başla"
                 href="/onboarding?role=mentee"
                 roleValue="mentee"
                 onClick={handleRoleSelect}
@@ -131,9 +131,9 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
               
               <RoleCard
                 icon={<GraduationCap className="w-8 h-8" />}
-                title="Deneyiminle ilham ver, hayatlara dokun"
-                description="Uzmanlığını paylaş, başkalarının yolunu aydınlat."
-                ctaLabel="Mentor olarak devam et"
+                title="Deneyiminizi paylaşın"
+                description="Bilgi ve tecrübenizle başkalarının gelişimine katkı sağlayın."
+                ctaLabel="Mentor olarak başla"
                 href="/onboarding?role=mentor"
                 roleValue="mentor"
                 onClick={handleRoleSelect}
@@ -143,13 +143,13 @@ const RoleSelectModal: React.FC<RoleSelectModalProps> = ({ isOpen, onClose }) =>
             {/* Alternative Action */}
             <div className="text-center pt-6 border-t border-gray-100">
               <p className="text-gray-600 mb-4">
-                Henüz emin değil misin? İlham almak için önce mentörleri keşfet.
+                Karar verme aşamasında mısınız? Önce platformu keşfedin.
               </p>
               <button
                 onClick={handleExploreClick}
                 className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 font-medium transition-colors group"
               >
-                <span>Önce mentörleri keşfet</span>
+                <span>Mentorları incele</span>
                 <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
               </button>
             </div>

@@ -78,30 +78,30 @@ const RoleCard: React.FC<RoleCardProps> = ({
             <>
               <div className="flex items-center text-sm text-gray-500">
                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
-                <span>Alanını seç</span>
+                <span>İlgi alanınızı belirleyin</span>
               </div>
               <div className="flex items-center text-sm text-gray-500">
                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
-                <span>Mentörü bul</span>
+                <span>Size uygun mentoru seçin</span>
               </div>
               <div className="flex items-center text-sm text-gray-500">
                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
-                <span>Randevu al</span>
+                <span>Görüşme planlayın</span>
               </div>
             </>
           ) : (
             <>
               <div className="flex items-center text-sm text-gray-500">
                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
-                <span>Profilini tamamla</span>
+                <span>Profilinizi oluşturun</span>
               </div>
               <div className="flex items-center text-sm text-gray-500">
                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
-                <span>Uzmanlık ekle</span>
+                <span>Uzmanlık alanlarınızı ekleyin</span>
               </div>
               <div className="flex items-center text-sm text-gray-500">
                 <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-3"></div>
-                <span>İlk randevunu al</span>
+                <span>Mentorluk vermeye başlayın</span>
               </div>
             </>
           )}
